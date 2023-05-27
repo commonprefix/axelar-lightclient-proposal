@@ -1,16 +1,24 @@
 \section{Introduction}
+Blockchain technology has revolutionized the way we create trustless and decentralized applications, offering immense composability and the ability to build complex primitives. This is particularly evident in the realm of decentralized finance (DeFi), where applications have been layered on top of each other to unlock new levels of functionality. However, the blockchain landscape is far from homogenous, with multiple blockchains employing different consensus protocols, varying levels of safety and liveness, and optimization for specific types of applications.
 
-\subsection{Current Construction}
+The challenge arises when we consider the interoperability between these diverse blockchains. Composability breaks down as applications on one chain struggle to interact seamlessly with applications on other chains, resulting in fragmentation of user base and liquidity.
 
-    - voting between attesters
-        - attestors vote on txs happened on Ethereum
-        - quadratic voting
-    - assumptions:
-        - eth safety/liveness
-        - axelar validators 
-        - axelar attesters 
-        - quadratic assumptions 
-        - power table assumptions 
+To address this issue, the Cosmos project has embraced the concept of "The Internet of Blockchains." Cosmos offers a modular blockchain stack that simplifies the creation of new blockchains using the Cosmos SDK. These Cosmos chains can communicate and transact with each other through the Inter-Blockchain Protocol (IBC), enabling interoperability within the Cosmos ecosystem.
+
+However, despite the strides made by Cosmos in connecting its own chains, a gap remains between the Cosmos chains and those that exist outside the Cosmos ecosystem. To bridge this divide, Axelar, a Cosmos-based blockchain, has emerged as a solution. Axelar acts as a connector, linking the Cosmos chains to non-Cosmos chains such as Ethereum, Bitcoin, Polygon, and others.
+
+Ethereum, in particular, is one of the most widely used blockchains with a multitude of decentralized applications spanning various sectors, including finance, gaming, and governance. As Axelar aims to connect the Cosmos chains with non-Cosmos chains, establishing a seamless and secure connection to Ethereum is of paramount importance. By enabling interoperability with Ethereum, Axelar unlocks the rich ecosystem of decentralized applications and services built on Ethereum. This report focuses on methods of building trustless connection between Ethereum to Axelar.
+
+\subsection{Current Construction: Verifying Source Chain Data into Axelar}
+The current construction of Axelar relies on a Tendermint-based delegated proof-of-stake consensus mechanism. Top 70 validators based on the total stake are chosen to participate in the Axelar consensus. The total stake of a validator is the combination of the stake locked by the validator itself and the stake delegated by the Axelar users.
+
+Axelar adopts a modular architecture to connect with different chains. Each connector module consists of two essential components. The first component verifies source chain data into Axelar, while the second generates threshold signatures that can be verified on the source chain. In this report, we focus exclusively on the verification of source chain data into Axelar.
+
+Currently, connectors utilize an on-chain voting mechanism within Axelar to verify transactions that occurred on the source chain. Validators who vouch to participate in a connector attestation are referred to as attestors. To determine the voting power of an attestor, Axelar employs quadratic voting. The voting power assigned to an attestor is the square root of their total stakes. This quadratic voting mechanism aims to ensure a fair distribution of influence among attestors based on their stake. To participate in the connector attestation, attestors are required to run a full node of the source chain and have access to the full node's RPC (Remote Procedure Call) interface. This enables attestors to verify the finalized transactions on the source chain.
+
+To post data from the source chain to Axelar, a user initiates the process by interacting with an Axelar smart contract on the source chain. Subsequently, the user calls the corresponding connector module on Axelar, initiating the voting poll. Attestors have the ability to view the active voting polls. For each poll, an attestor can decide whether to vote in favor of or against it. To make an informed decision, the attestor queries the source chain's full node RPC and checks if the requested
+transactions have been finalized on the source chain. If a poll receives sufficient attestation from the validators, it is accepted; otherwise, it is rejected. This voting process forms the basis for verifying the source chain data into Axelar. 
+For the aforementioned connector construction to function securely and maintain liveness, it is assumed that both the source chain and Axelar are safe and live. In addition, the quadratic voting power distribution among the attestors is assumed to have an honest majority.
 \subsection{Problem Statement}
 - ethereum to axelar
 \subsection{Preliminaries}
