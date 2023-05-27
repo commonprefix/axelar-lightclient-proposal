@@ -1,3 +1,13 @@
 \begin{abstract}
-  In this paper we propose a theory of everything...
+  Axelar is a Cosmos zone connecting EVM chains with the rest of the Cosmos ecosystem.
+  To enable this, Axelar requires a set of Tendermint proof-of-stake validators to attest to events happening on the EVM chains. These can then be relayed to the Cosmos side.
+  Validators are expected to run full nodes of the EVM chains to gather event information. Since this is expensive, some validators may prefer to connect to centralized RPC providers. This eventuality is a cause of concern due to centralization and cannot currently be detected.
+  To address this, we advocate for an on-chain light client to run as an Axelar module that trustlessly consumes source data.
+  We focus on Ethereum.
+  Such a light client checks the veracity of any cross-chain claims to ensure the relevant events have been included in the canonical source chain,
+  safeguarding against untrustworthy EVM RPC providers.
+  We discuss and contrast several possible flavors of light or superlight clients based on \emph{Simple Payment Verification} (SPV), \emph{zero knowledge}, or \emph{refereed games}.
+  Tailoring the solution to the particularities of Axelar, we recommend SPV as the most suitable choice.
+  We present an architecture blueprint and estimate the workforce allocation as well as the cost needed for the effort.
+  Lastly, we put forth a theoretical model which explains why such design changes are warranted. Theoretically, our proposed changes enable the system to endure temporary dishonest advantages among Axelar validators and restore safety following the re-establishment of an honest supermajority.
 \end{abstract}
