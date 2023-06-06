@@ -9,7 +9,7 @@ However, despite the strides made by Cosmos in connecting its own chains, a gap 
 
 Ethereum, in particular, is one of the most widely used blockchains with a multitude of decentralized applications spanning various sectors, including finance, gaming, and governance. As Axelar aims to connect the Cosmos chains with non-Cosmos chains, establishing a seamless and secure connection to Ethereum is of paramount importance. By enabling interoperability with Ethereum, Axelar unlocks the rich ecosystem of decentralized applications and services built on Ethereum. This report focuses on methods of building trustless connection between Ethereum to Axelar.
 
-\subsection{Current Construction: Verifying Source Chain Data into Axelar}
+\subsection{Current Construction}
 The current construction of Axelar relies on a Tendermint-based delegated proof-of-stake consensus mechanism. Top 70 validators based on the total stake are chosen to participate in the Axelar consensus. The total stake of a validator is the combination of the stake locked by the validator itself and the stake delegated by the Axelar users.
 
 Axelar adopts a modular architecture to connect with different chains. Each connector module consists of two essential components. The first component verifies source chain data into Axelar, while the second generates threshold signatures that can be verified on the source chain. In this report, we focus exclusively on the verification of source chain data into Axelar.
@@ -19,9 +19,204 @@ Currently, connectors utilize an on-chain voting mechanism within Axelar to veri
 To post data from the source chain to Axelar, a user initiates the process by interacting with an Axelar smart contract on the source chain. Subsequently, the user calls the corresponding connector module on Axelar, initiating the voting poll. Attestors have the ability to view the active voting polls. For each poll, an attestor can decide whether to vote in favor of or against it. To make an informed decision, the attestor queries the source chain's full node RPC and checks if the requested
 transactions have been finalized on the source chain. If a poll receives sufficient attestation from the validators, it is accepted; otherwise, it is rejected. This voting process forms the basis for verifying the source chain data into Axelar. 
 For the aforementioned connector construction to function securely and maintain liveness, it is assumed that both the source chain and Axelar are safe and live. In addition, the quadratic voting power distribution among the attestors is assumed to have an honest majority.
+
 \subsection{Problem Statement}
-- ethereum to axelar
+The current construction of Axelar relies on attestors running the full node of the source chain to verify transactions and vote accordingly. However, this requirement imposes costs on attestors, who may be incentivized to rely on third-party service providers to run and maintain the full nodes on their behalf. Unfortunately, the Axelar network lacks a mechanism to detect whether attestors are utilizing third-party providers or running the full nodes themselves.
+
+This situation poses a significant centralization risk within the Axelar network. With a few dominant third-party providers in the market, attestors are likely to use the same service provider. Consequently, if the third-party provider experiences a temporary compromise or breach, the entire Axelar network becomes vulnerable to attacks. The compromised provider could potentially censor transactions or even present incorrect transactions from the source chain to Axelar, leading to financial losses for Axelar users.
+
+Similarly, collusion among attestors can also jeopardize the network's security. In scenarios where there is a temporary failure in the honest majority assumption over the quadratic voting distribution among attestors, particularly for long-tail chains with only a few attestors, the network becomes susceptible to attacks. In both situations outlined above, an honest Axelar validator who is not actively monitoring the source chain has no means to detect the attack and is forced to accept incorrect data from the source chain.
+
+Furthermore, as the Axelar network expands its support for additional chains, attestors will be required to run an increasing number of full nodes to verify transactions from these source chains. This scalability bottleneck hampers the growth and efficiency of the Axelar network.
+
+To address these challenges, we propose a construction that enables users or attestors to submit proofs verifying the consensus of the source chain within the Axelar execution layer. This is accomplished through the utilization of light and super-light client constructions. This approach removes the necessity of relying on the honest majority assumption among attestors.
+
+In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with the requirements of Axelar, aiming to mitigate centralization risks, enhance security, and improve scalability.
+
 \subsection{Preliminaries}
-- safety under dishonest majority in axelar network
-- healing 
-- incentives 
+\noindent
+\textbf{Execution model.}
+A ledger protocol $\Pi$ is a distributed protocol that offers
+a \emph{read} and \emph{write} functionality.
+The ledger protocol is accompanied by a \emph{validity language}
+$\mathbb{V}_{\Pi}$ containing all possible transactions that are ``legal''
+according to the protocol $\Pi$.
+The
+\emph{read} functionality returns a \emph{ledger} in $\mathbb{V}_{\Pi}^*$,
+whereas the \emph{write} functionality accepts a \emph{transaction} in $\mathbb{V}_\Pi$.
+The \emph{ledger} is a finite sequence of pairs $(t, \tx)$ consisting
+of an integer timestamp $t$ and a transaction $\tx$.
+
+A particular protocol \emph{execution}
+is one run of an environment $\mathcal{Z}_{\Pi,\mathcal{A}}$~\cite{uc} which simulates
+the execution of $\Pi$ among multiple honest and adversarial parties. The adversarial
+parties are controlled by one PPT adversary $\mathcal{A}$. The adversary and honest
+parties are modelled as Interactive Turing Machines.
+Out of the
+$n_\Pi$ parties maintaining the ledger, $t_\Pi$ are corrupt and are controlled by the adversary
+$\mathcal{A}$.
+
+\noindent
+\textbf{Networking.}
+Time evolves in synchronous lock-step \emph{rounds} denoted by the integers $1, 2,
+\ldots$. All parties have perfectly synchronized clocks, as they know the current round number.
+Messages broadcast by an honest party at a round $r$ are received by all
+other honest parties at the beginning of the next round $r + 1$. The adversary
+can reorder messages, potentially different for each honest party,
+inject different messages to the network tapes of different honest parties,
+but cannot drop messages. We work in the \emph{client gossiping model} where
+a new message received by any honest party is rebroadcast to all other honest
+parties. We assume there are no bandwidth constraints.
+The total execution time is polynomial, and each (honest or adversarial)
+party is bound to polynomial time per round.
+
+\noindent
+\textbf{Sequence notation.}
+In addition to its use to mean element-of-set, we will use $x \in A$ to mean that $x$
+appears in the sequence $A$. We use $|A|$ for the length of the sequence $A$.
+We write $A[i]$ for the $i$-th element of $A$ ($0$-based) and $A[-i]$ for the
+$i$-th element of $A$ from the end. The element $A[-1]$ is the last element of $A$.
+We denote by $A[{i}{:}{j}]$ the subarray of $A$ starting from element $i$ (inclusive)
+and ending in element $j$ exclusive. The notation $A[{:}j]$ means the sequence
+from the beginning up to $j$, whereas $A[i{:}]$ means the sequence from $i$ till
+the end.
+
+\noindent
+\textbf{Ledgers.}
+We denote $\Ledger[\Pi][P][r]$ the result of executing the \emph{read} functionality upon party $P$
+operating in ledger protocol $\Pi$ at round $r$. The ledger $\Ledger[\Pi][P][r]$ of party $P$ at round $r$ is a sequence. We will write
+$a \in S$ for an element $a$ and a sequence $S$ if the element $a$ appears somewhere in
+the sequence $S$. For a ledger $L$ we will also use the notation $\tx \in L$ to mean that
+the transaction $\tx$ appears in $L$ with some timestamp, that is, there exists some $t \in \mathbb{N}$
+such that $(t, \tx) \in L$. In all practical blockchain-based ledger protocols, the timestamp $t$
+associated with a transaction will correspond to the timestamp recorded on the block in which the
+transaction is confirmed. As such, timestamps will all be in the past and non-decreasing.
+
+A ledger protocol is \emph{safe} if the view of different honest parties is consistent.
+
+\begin{definition}[Persistence]
+  A ledger protocol $\Pi$ is \emph{persistent} during $I$ if for all honest parties $P_1, P_2$ at rounds
+  $r_1, r_2 \in I$, with $r_1 < r_2$,
+  we have that $\Ledger[\Pi][P_1][r_1] \preceq \Ledger[\Pi][P_2][r_2]$.
+\end{definition}
+
+A ledger protocol is \emph{live} if honest transactions make it to the ledger.
+
+\begin{definition}[Liveness]
+  A ledger protocol $\Pi$ is \emph{live} with liveness $u \in \mathbb{N}$ during $I$ if,
+  for all honest parties $P_1, P_2$, whenever
+  $P_1$ attempts to write a \emph{valid} transaction $\tx$ to the ledger at round $r \in I$,
+  then for all $r' \in I$ with $r' \geq r + u$
+  the transaction is included in $\Ledger[\Pi][P_2][r']$.
+\end{definition}
+
+\begin{definition}[Timeliness]
+  A ledger protocol $\Pi$ is \emph{timely} with timeliness $\nu \in \mathbb{N}$ during $I$ if,
+  for all honest parties $P$, and for all rounds $r$, it holds that:
+
+  \begin{enumerate}
+    \item $\Ledger[\Pi][P][r][-1]$ has a timestamp in the past, and
+    \item $\Ledger[\Pi][P][r]$ has non-decreasing timestamps.
+  \end{enumerate}
+
+  Additionally, for all rounds $r \in I$, it holds that
+  the timestamps recorded in $\Ledger[\Pi][P][r][|\Ledger[\Pi][P][r-1]|{:}]$
+  are after $r - \nu$.
+\end{definition}
+
+Ledger security is defined as a ledger protocol that is both safe and live.
+
+\begin{definition}[Security]
+  A ledger protocol is \emph{secure} during $I$ with liveness $u$ if it is:
+
+  \begin{enumerate}
+    \item \emph{persistent} during $I$,
+    \item \emph{live} with liveness $u$ during $I$, and
+    \item \emph{timely} with timeliness $\tau$ during $I$.
+  \end{enumerate}
+\end{definition}
+
+\noindent
+\textbf{Bridges.}
+A \emph{bridge} $\Lambda(\Pi_1, \Pi_2)$ is an interoperability protocol between two ledger protocols
+$\Pi_1$ and $\Pi_2$. The execution is now one \emph{shared} environment $\mathcal{Z}$ between $\Pi_1$
+and $\Pi_2$, but each of $\Pi_1$ and $\Pi_2$ are simulated internally by the environment exactly as before.
+The purpose of the bridge is to relay events or information that take place on the source
+side to the destination side. Without loss of generality, we consider $\Pi_1$ to be the \emph{source},
+and $\Pi_2$ to be the \emph{destination}. If the bridge is bidirectional, our statements can be
+applied in both directions. For our purposes, the purpose is to move value from one side to
+the other.
+
+A population of $n$ nodes, among which at most $t$ are adversarial, are responsible for operating the
+bridge.
+
+The bridge transmits certain transactions of interest from $\Pi_1$ to $\Pi_2$. These are \emph{cross-chain}
+transactions and are defined by a function $\phi$ which accompanies the bridge protocol.
+
+\begin{definition}[Cross-chain transaction]
+  Let $\phi$ be an efficiently computable and invertible one-to-one
+  injection $V_{\Pi_1} \longrightarrow V_{\Pi_2} \cup \{ \bot \}$.
+  A transaction $\tx$ on the source side is a \emph{cross-chain} transaction if
+  $\phi(\tx) \neq \bot$.
+\end{definition}
+
+Bridge liveness states that a transaction which appears on the source side will eventually make
+it to the target side. Intuitively, this tells us that \emph{good things happen}. Whenever an
+honest party attempts to cross the bridge, he will be successful in doing so.
+
+\begin{figure}
+    \center
+    \includegraphics[width=0.7\columnwidth]{figures/bridge-liveness.pdf}
+    \label{fig:bridge-liveness}
+    \caption{Bridge liveness}
+\end{figure}
+
+\begin{definition}[Bridge Liveness]
+  A bridge protocol $\Lambda(\Pi_1, \Pi_2)$ is \emph{live} with \emph{liveness} $u_\ell \in \mathbb{N}$
+  during $I$ if, for all honest parties $P_1$ of $\Pi_1$ and $P_2$ of $\Pi_2$ and for all rounds
+  $r_1, r_2 \in I$ with $r_2 \geq r_1 + u_\ell$ we have that, whenever $(t, \tx) \in \Ledger[\Pi_1][P_1][r_1]$
+  with $t \in I$ and $\phi(\tx) \neq \bot$, then $\phi(\tx) \in \Ledger[\Pi_2][P_2][r_2]$.
+\end{definition}
+
+A visual depiction of bridge liveness is illustrated in Figure~\ref{fig:bridge-liveness}.
+Even though our treatment is general to all ledger protocols and not particular to blockchains,
+here we illustrate a blockchain example. A block containing $\tx$ appears in $\Pi_1$ in the view
+of $P_1$ at round $r_1$. Soon after, in round $r_2 \leq r_1 + u\ell$, the corresponding transaction
+$\phi(\tx)$ appears in the view of $P_2$ on $\Pi_2$.
+
+Bridge safety mandates that a transaction appears on the destination side only if it has first
+appeared on the source side, albeit with some delay. Intuitively, this tells us that \emph{bad
+things don't happen}, because it's impossible for us to find a transaction paying out on the
+destination without its preimage having appeared on the source. An adversary cannot make money
+appear on the destination side without having paid on the source side.
+
+\begin{figure}
+    \center
+    \includegraphics[width=0.8\columnwidth]{figures/bridge-safety.pdf}
+    \label{fig:bridge-safety}
+    \caption{Bridge safety}
+\end{figure}
+
+\begin{definition}[Bridge Safety]
+  A bridge protocol $\Lambda(\Pi_1, \Pi_2)$ is \emph{safe} with \emph{safety} $u_s \in \mathbb{N}$
+  during $I$ if, for all honest parties $P_1$ of $\Pi_1$ and $P_2$ of $\Pi_2$ and for all rounds
+  $r_1, r_2 \in I$ with $r_2 \geq r_1 + u_s$ we have that, whenever $(t, \tx) \in \Ledger[\Pi_2][P_2][r_1]$
+  with $t \in I$ and $\phi^{-1}(\tx) \neq \bot$, then
+  $\phi^{-1}(\tx) \in \Ledger[\Pi_1][P_1][r_2]$.
+\end{definition}
+
+A visual depiction of bridge safety is illustrated in Figure~\ref{ref:bridge-safety}.
+The party $P_2$ first observes the image $\tx$ on $\Pi_2$ at round $r_1$, and expects
+another party $P_1$ to have already seen $\phi^{-1}(\tx)$ on $\Pi_1$. However, due to
+network and consensus delays, this may be observed slightly later, but no later than at
+round $r_2 \leq r_1 + u_s$.
+
+\begin{definition}[Bridge Security]
+  A bridge $\Lambda$ is \emph{secure} with safety $u_s \in \mathbb{N}$ and
+  liveness $u_\ell \in \mathbb{N}$ during $I$ if it is safe with safety $u_s$ during $I$
+  and live with liveness $u_\ell$ during $I$.
+\end{definition} 
+
+% - safety under dishonest majority in axelar network
+% - healing 
+% - incentives 
