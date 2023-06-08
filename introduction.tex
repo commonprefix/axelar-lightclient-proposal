@@ -50,7 +50,7 @@ $\mathbb{V}_{\Pi}$ containing all possible transactions that are ``legal''
 according to the protocol $\Pi$.
 The
 \emph{read} functionality returns a \emph{ledger} in $\mathbb{V}_{\Pi}^*$,
-whereas the \emph{write} functionality accepts a \emph{transaction} in $\mathbb{V}_\Pi$.
+whereas the \emph{write} functionality accepts a ledger and a \emph{transaction} in $\mathbb{V}_\Pi$.
 The \emph{ledger} is a finite sequence of pairs $(t, \tx)$ consisting
 of an integer timestamp $t$ and a transaction $\tx$.
 
@@ -65,24 +65,24 @@ $\mathcal{A}$.
 
 \noindent
 \textbf{Networking.}
-Time evolves in synchronous lock-step \emph{rounds} denoted by the integers $1, 2,
+Time evolves in \emph{synchronous} lock-step \emph{rounds} denoted by the integers $1, 2,
 \ldots$. All parties have perfectly synchronized clocks, as they know the current round number.
-Messages broadcast by an honest party at a round $r$ are received by all
+Messages which are broadcast by an honest party at a round $r$ are received by all
 other honest parties at the beginning of the next round $r + 1$. The adversary
-can reorder messages, potentially different for each honest party,
+can reorder messages, potentially different for each honest party, and
 inject different messages to the network tapes of different honest parties,
-but cannot drop messages. We work in the \emph{client gossiping model} where
+but cannot drop messages. We work in the \emph{client gossiping model}, where
 a new message received by any honest party is rebroadcast to all other honest
-parties. We assume there are no bandwidth constraints.
+parties; therefore, a party cannot identify the origin of a message. We assume there are no bandwidth constraints.
 The total execution time is polynomial, and each (honest or adversarial)
 party is bound to polynomial time per round.
 
 \noindent
 \textbf{Sequence notation.}
-In addition to its use to mean element-of-set, we will use $x \in A$ to mean that $x$
+$x \in A$ denotes that either $x$ is an element of set $A$ or $x$
 appears in the sequence $A$. We use $|A|$ for the length of the sequence $A$.
 We write $A[i]$ for the $i$-th element of $A$ ($0$-based) and $A[-i]$ for the
-$i$-th element of $A$ from the end. The element $A[-1]$ is the last element of $A$.
+$i$-th element of the inverse $A$ ($1$-based); the element $A[-1]$ is the last element of $A$.
 We denote by $A[{i}{:}{j}]$ the subarray of $A$ starting from element $i$ (inclusive)
 and ending in element $j$ exclusive. The notation $A[{:}j]$ means the sequence
 from the beginning up to $j$, whereas $A[i{:}]$ means the sequence from $i$ till
@@ -90,8 +90,9 @@ the end.
 
 \noindent
 \textbf{Ledgers.}
-We denote $\Ledger[\Pi][P][r]$ the result of executing the \emph{read} functionality upon party $P$
-operating in ledger protocol $\Pi$ at round $r$. The ledger $\Ledger[\Pi][P][r]$ of party $P$ at round $r$ is a sequence. We will write
+We denote $\Ledger[\Pi][P][r]$ the result of executing the \emph{read} functionality by party $P$
+operating in ledger protocol $\Pi$ at round $r$. % Therefore, the ledger $\Ledger[\Pi][P][r]$ of party $P$ at round $r$ is a sequence of transactions. 
+We will write
 $a \in S$ for an element $a$ and a sequence $S$ if the element $a$ appears somewhere in
 the sequence $S$. For a ledger $L$ we will also use the notation $\tx \in L$ to mean that
 the transaction $\tx$ appears in $L$ with some timestamp, that is, there exists some $t \in \mathbb{N}$
@@ -146,8 +147,8 @@ Ledger security is defined as a ledger protocol that is both safe and live.
 \noindent
 \textbf{Bridges.}
 A \emph{bridge} $\Lambda(\Pi_1, \Pi_2)$ is an interoperability protocol between two ledger protocols
-$\Pi_1$ and $\Pi_2$. The execution is now one \emph{shared} environment $\mathcal{Z}$ between $\Pi_1$
-and $\Pi_2$, but each of $\Pi_1$ and $\Pi_2$ are simulated internally by the environment exactly as before.
+$\Pi_1$ and $\Pi_2$. The execution is defined by a \emph{shared} environment $\mathcal{Z}$ between $\Pi_1$
+and $\Pi_2$, but each of $\Pi_1$ and $\Pi_2$ are simulated internally by the environment as before.
 The purpose of the bridge is to relay events or information that take place on the source
 side to the destination side. Without loss of generality, we consider $\Pi_1$ to be the \emph{source},
 and $\Pi_2$ to be the \emph{destination}. If the bridge is bidirectional, our statements can be
@@ -168,8 +169,8 @@ transactions and are defined by a function $\phi$ which accompanies the bridge p
 \end{definition}
 
 Bridge liveness states that a transaction which appears on the source side will eventually make
-it to the target side. Intuitively, this tells us that \emph{good things happen}. Whenever an
-honest party attempts to cross the bridge, he will be successful in doing so.
+it to the target side. Intuitively, this tells us that \emph{good things happen}, that is whenever an
+honest party attempts to cross the bridge, it will successfully do so.
 
 \begin{figure}
     \center
@@ -193,9 +194,9 @@ $\phi(\tx)$ appears in the view of $P_2$ on $\Pi_2$.
 
 Bridge safety mandates that a transaction appears on the destination side only if it has first
 appeared on the source side, albeit with some delay. Intuitively, this tells us that \emph{bad
-things don't happen}, because it's impossible for us to find a transaction paying out on the
-destination without its preimage having appeared on the source. An adversary cannot make money
-appear on the destination side without having paid on the source side.
+things don't happen}, because it's impossible to find a transaction paying out on the
+destination without its preimage having appeared on the source. In essence, an adversary cannot create money
+on the destination side without having paid on the source side.
 
 \begin{figure}
     \center
