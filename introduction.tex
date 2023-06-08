@@ -55,7 +55,7 @@ The \emph{ledger} is a finite sequence of pairs $(t, \tx)$ consisting
 of an integer timestamp $t$ and a transaction $\tx$.
 
 A particular protocol \emph{execution}
-is one run of an environment $\mathcal{Z}_{\Pi,\mathcal{A}}$~\cite{uc} which simulates
+is one run of an environment $\mathcal{Z}_{\Pi,\mathcal{A}}$~\cite{FOCS:Canetti01} which simulates
 the execution of $\Pi$ among multiple honest and adversarial parties. The adversarial
 parties are controlled by one PPT adversary $\mathcal{A}$. The adversary and honest
 parties are modelled as Interactive Turing Machines.
@@ -175,8 +175,8 @@ honest party attempts to cross the bridge, it will successfully do so.
 \begin{figure}
     \center
     \includegraphics[width=0.7\columnwidth]{figures/bridge-liveness.pdf}
-    \label{fig:bridge-liveness}
     \caption{Bridge liveness}
+    \label{fig:bridge-liveness}
 \end{figure}
 
 \begin{definition}[Bridge Liveness]
@@ -201,8 +201,8 @@ on the destination side without having paid on the source side.
 \begin{figure}
     \center
     \includegraphics[width=0.8\columnwidth]{figures/bridge-safety.pdf}
-    \label{fig:bridge-safety}
     \caption{Bridge safety}
+    \label{fig:bridge-safety}
 \end{figure}
 
 \begin{definition}[Bridge Safety]
@@ -213,7 +213,7 @@ on the destination side without having paid on the source side.
   $\phi^{-1}(\tx) \in \Ledger[\Pi_1][P_1][r_2]$.
 \end{definition}
 
-A visual depiction of bridge safety is illustrated in Figure~\ref{ref:bridge-safety}.
+A visual depiction of bridge safety is illustrated in Figure~\ref{fig:bridge-safety}.
 The party $P_2$ first observes the image $\tx$ on $\Pi_2$ at round $r_1$, and expects
 another party $P_1$ to have already seen $\phi^{-1}(\tx)$ on $\Pi_1$. However, due to
 network and consensus delays, this may be observed slightly later, but no later than at
