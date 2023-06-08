@@ -229,7 +229,7 @@ round $r_2 \leq r_1 + u_s$.
 % - healing 
 % - incentives 
 
-\subsubsection{Ethereum Sync Committee}
+\subsubsection{Ethereum Sync Committee}\label{subsec:sync-committee}
 
 Let us now provide a brief overview of Ethereum's \emph{sync
 committee}~\cite{sync-committee}. This feature was introduced in the system's
@@ -272,9 +272,25 @@ starting from an initial trusted point. The cost of updating the sync committee
 depends on the size of the committee, the aggregate signature, and the Merkle
 path; in Ethereum this is estimated to approx. $25$KB~\cite{sync-committee}.
 
-Finally, we note that there exist incentives for participating honestly in the
-sync committee~\cite{sync-committee-incentives}. In particular, a committee
-member receives a reward for every slot during which it participates (that is
-sign a block's header). However, it also incurs a penalty for non participation
-(that is either abstaining or signing the wrong header), equal to the reward
-it would have received if participating. 
+There are two main points of discussion around the sync committee.
+
+First, the committee should be honest. In essence, the sampling process, via
+which the sync committee's members are chosen from the set of all Ethereum
+validators, should be secure, s.t. the probability that $\frac{2}{3}$ of the
+committee members are adversarial is negligible. Observe that, if the committee
+is malicious, then it can convince a light client of a fraudulent Ethereum
+state. In a sense, this is a similar problem as the one identified in the
+previous solution. Nonetheless, this problem has been extensively researched by
+the Ethereum community, so the current election mechanism should be more secure
+than any ad hoc solution that could be used in the first alternative above.
+
+Second, there do exist incentives for participating honestly in the sync
+committee~\cite{sync-committee-incentives}. In particular, a committee member
+receives a reward for every slot during which it participates (that is sign a
+block's header). A member also incurs a penalty for non participation (that is
+either abstaining or signing the wrong header), equal to the reward it would
+have received if participating.
+However, slashed validators \emph{can} be selected as members of the sync
+committee, for some period of time after the slashing occurs. This results in
+complex dynamics, in terms of incentives, which is unclear whether they could
+affect Axelar's implementation.

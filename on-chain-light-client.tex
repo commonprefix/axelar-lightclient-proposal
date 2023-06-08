@@ -43,21 +43,129 @@ holds.
 
 \subsection{On-Chain Light Client Alternatives}\label{subsec:alternatives}
 
+We now present an array of solutions for the on-chain light client. For each
+solution we give a high-level overview, highlighting its mechanics as well as
+possible shortcomings. Each alternative offers different features and relies on
+different assumptions. A notable point is that all solutions, except the first,
+rely on Ethereum's sync committee.
+
 \subsubsection{SPV Light Client (sampling validators)}
-\subsubsection{SPV Light Client (sync committee)} 
-        - 24kb 
-        - a sampling of validators vs sync committee
+
+The first solution makes use of Ethereum's validators. In particular, we assume
+that there exists a mechanism for sampling some of the signatures that were
+produced by the validators on each block. To verify an Ethereum block, the
+light client checks:
+i) that the sampling process was done correctly (e.g., following a verifiable pseudorandom process);
+ii) that the provided signatures correspond to active Ethereum validators;
+iii) that enough signatures have been provided to guarantee the block's correctness. 
+
+An advantage of this solution is the non-reliance on the sync committee. In
+particular, the only assumption that is needed is that Ethereum is safe and
+live (which is already assumed) and that the probability of sampling
+adversarial signatures is negligible.
+
+However, it also presents various shortcomings. 
+First, Ethereum's consensus relies on Casper FFG~\cite{buterin2017casper} and
+LMD-GHOST. This is particularly complicated and it is unclear how a secure
+signature sampling process can be implemented.
+Second, it is unclear how the light client can retrieve the active Ethereum
+validators at any point in time. In particular, assuming that the light client
+starts from a trusted block header, it is unclear how to obtain each following
+period's validators, in a succinct and efficient manner.
+
+\subsubsection{SPV Light Client (Sync committee)} 
+
+This solution makes direct use of Ethereum's sync committee. In particular,
+Axelar validators run an Ethereum light client, which keeps track of the sync
+committees as described in Section~\ref{subsec:sync-committee}.
+
+The major advantage of this solution is that it is straightforward to
+implement. In particular, the sync committee has already been implemented in
+Ethereum and there exists a large body of community projects and tools that
+could be reused in Axelar's case. Nonetheless, the concerns which were
+discussed in Section~\ref{subsec:sync-committee} around the committee's
+security and incentives should also be taken into account. In addition, this
+solution requires that at least one Axelar attestor is honest, in order to
+guarantee liveness.
+
 \subsubsection{Optimistic Light Client}
-        - doesn't make sense due to high bridge traffic
+
+This solution makes use of Ethereum's sync committee in a more efficient
+(optimistic) manner. The goal of this mechanism is for the Axelar client to
+avoid updating the sync committee following the standard mechanism (described
+above).
+
+In more detail, at some point in time, an Axelar attestor submits a list of
+hashes, each corresponding to a chain of sync committee members. In essence,
+the first hash corresponds to the initial sync committee, the second hash to
+the following committee and so on.
+
+After an attestor submits a list, there exists a contest period, during which
+another attestor can challenge the submission. The challenger provides an
+alternative list, at which point the dispute needs to be resolved. This is done
+by using Ethereum's light client mechanism, that is starting from the initial
+sync committee, each list is parsed until the point of dispute. At this point,
+one of the two lists will be revealed as fraudulent, since it should be
+impossible to provide the necessary signatures that validate its sync committee
+transition across periods.
+
+The benefit of this mechanism is that, in the optimistic case, when the
+attestor submits a valid list, the Axelar clients don't need to keep track of
+Ethereum's sync committee protocol.
+
+However, there exist various disadvantages. First, the mechanism assumes that
+at least one attestor is honest (in order to contest an invalid submission).
+Second, latency depends on the length of the contest period, which should be
+large enough to provide enough time for an honest challenge. Third, the dispute
+resolution mechanism can be both time-consuming and expensive, in terms of
+storage needed for revealing the sync committee chains.
+Since the bridge is expected to observe high traffic, these disadvantages make
+this solution particularly problematic. 
+
 \subsubsection{Bisection Light Client}
-        - doesn't make sense due to high bridge traffic
+
+This solution is similar to the previous optimistic solution. In this case,
+instead of submitting a list of hashes, the attestor organizes the sync
+committee hashes in a Merkle tree and submits its root.
+
+The main advantage over the previous solution is that the proof size is
+constant, in the optimistic case. In addition, in the case of a challenge, the
+parties need to reveal a logarithmic number of values, which correspond to the
+Merkle branch (hence the name ``bisection'', which refers to the dispute
+resolution mechanism).
+
+However, the improvements here are only incremental compared to the above
+optimistic alternative. Notably, the bisection solution suffers from the same
+disadvantages which, under high traffic, make it not particularly useful.
+
 \subsubsection{SNARK Light Client}
-        - recursion is not helpful
-        - groth16: 2 group elements
-        - plonk
-        - holo2
-        -
-\subsubsection{Nice table with a comparison}
+
+The final solution which is discussed here is based on zero-knowledge, namely
+SNARK proofs (Succinct Non-interactive ARguments of Knowledge).
+
+Briefly, an attestor creates a proof that an Ethereum block has been signed by
+enough members of the sync committee. Following, it publishes the block's
+header on Axelar, along with the proof, such that every Axelar client can
+validate it in a non-interactive manner.
+
+One advantage of this solution is that SNARKs can be very efficient in terms of
+proof sizes. For example, a Groth16~\cite{EC:Groth16} proof consists of only
+$2$ group elements. However, we note that the problem under question is not one
+of efficient bootstrapping, as is the usual use case for SNARKs, but obtaining
+the latest state of Ethereum at any point in time. This is relevant because
+recursion, which is a major feature in terms of efficiency, can be used only on
+chains of increasing length, but not when facing incremental changes in a
+state, as is our case.
+
+One main disadvantage of this solution is implementation complexity. Securely
+implementing ZK-SNARKs can be particularly challenging, even more so since they
+have been developed fairly recently.
+
+- plonk
+
+- holo2
+
+\subsubsection{Comparison}
          - accountability
          - interactivity
          - proof size 
@@ -68,4 +176,5 @@ holds.
          - liveness assumptions
          - historical validity
          - implementation complexity
+
 \subsubsection{Our recommendation}
