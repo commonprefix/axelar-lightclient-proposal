@@ -162,19 +162,62 @@ implementing ZK-SNARKs can be particularly challenging, even more so since they
 have been developed fairly recently.
 
 - plonk
-
 - holo2
+\textbf{--- DK: also not sure about these so leaving them for now ---}
 
 \subsubsection{Comparison}
-         - accountability
-         - interactivity
-         - proof size 
-         - safety assumptions
-             - eth safety/liveness
-             - axelar validators 
-             - axelar attesters 
-         - liveness assumptions
-         - historical validity
-         - implementation complexity
+
+Let us now offer a summarized comparison of all outlined solutions above. 
+
+\noindent\textbf{Interactivity.}
+Both SPV solutions (either sampling Ethereum validators' signatures or using
+the sync committee), as well as the SNARK-based solution are non-interactive,
+in the sense that the proof can be validated by all other Axelar validators
+non-interactively. The optimistic and bisection solutions are interactive,
+since the validators need to actively engage in the case of a dispute.
+
+\noindent\textbf{Safety Assumptions.}
+All solutions require Ethereum to be safe. In the SPV and SNARK solutions, this
+is the only assumption. The optimistic and bisection solutions also assume
+existential honestly of Axelar attestors, such that a fraudulent submission is
+challenged (within the contest period of time).
+% - safety assumptions
+%     - eth safety/liveness
+%     - axelar validators 
+%     - axelar attesters 
+
+\noindent\textbf{Liveness Assumptions.}
+As with safety, all solutions require Ethereum to be live. In addition, all
+solutions require at least one Axelar attestor to be honest, in order to
+publish the updated Ethereum state along with the necessary proof.
+
+\noindent\textbf{Implementation Complexity.}
+For the SPV solution that utilizes the sync committee the implementation
+complexity is relatively low, since the sync committee is already offered as a
+feature on Ethereum and its incorporation in the Axelar client is fairly
+straightforward. The complexity of the optimistic and bisection alternatives is
+medium, since an analysis is required around the details of the dispute
+resolution mechanism and the duration of the contest period. Finally, the SPV
+sampling and the SNARK-based alternatives are highly complicated; in the
+former, a thorough analysis is needed on implementing a secure sampling
+mechanism; in the latter, implementing and using zero-knowledge proof systems
+is non-trivial.
+
+\noindent\textbf{Proof Size.}
+In the SPV sampling solution, the proof size depends on the number of sampled
+(Ethereum validators') signatures, so it is unclear at this point how large it
+should be. In the SPV sync committee based solution, the proof size corresponds
+to the BLS signatures of the sync committee validators, which should be on the
+order of a few hundred bytes~\cite{sync-committee}. 
+\textbf{--- DK: TODO proof sizes for optimistic, bisection, SNARK ---}
+
+\noindent\textbf{Ethereum Sync Committee Reliance.}
+All solutions, except the first, rely on a secure sync committee. In
+particular, if the sync committee becomes malicious then it can sign a
+malicious block header which would result in a compromise of Axelar's bridge.
+
+- accountability
+- historical validity
+\textbf{--- DK: also not sure about these so leaving them for now ---}
 
 \subsubsection{Our recommendation}
