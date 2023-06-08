@@ -228,3 +228,46 @@ round $r_2 \leq r_1 + u_s$.
 % - safety under dishonest majority in axelar network
 % - healing 
 % - incentives 
+
+\subsubsection{Ethereum Sync Committee}
+
+Let us now provide a brief overview of Ethereum's \emph{sync
+committee}~\cite{sync-committee}. This feature was introduced in the system's
+``Altair'' hard fork and is specifically tailored for use of light clients, as
+we will discuss in the alternatives of Section~\ref{subsec:alternatives}.
+
+The sync committee consists of $512$ of Ethereum validators. They are randomly
+selected, from the set of all validators, every sync committee period (approx.
+$1$ day).
+
+Each validator in the sync committee is continually online and signs the header
+of each block that is added to the chain's head on every slot. Before a new
+period begins, the new sync committee is recorded on Ethereum's beacon chain.
+Therefore, the new committee is validated by both Ethereum's validators and the
+previous sync committee.
+
+Each light client is assumed to know the block header of some block. In the
+most basic case, this could be the header of the genesis block.
+
+We demonstrate the usage of the sync committee with the following example.
+
+Assume that a client $C$ holds the block header of some slot $N$, that is part
+of the sync committee period $X$. 
+
+When $C$ wants to authenticate the header of a block at slot $N'$, which is
+part of the period $X+1$, it proceeds as follows.
+
+First, $C$ validates the transaction that defines the information of the sync
+committee of period $X+1$. To do so, it requests the Merkle branch of the block
+in period $X$ that contains this transaction. To validate the block, $C$ checks
+that it has been signed by enough parties of the sync committee of period $X$.
+
+If the validation succeeds, $C$ updates its sync committee for $X+1$ as the one
+defined in the transaction. At this point, $C$ can validate every block header
+for each slot of period $X+1$, by obtaining the corresponding signatures of the
+sync committee of that period.
+
+Using this iterative process, the light client can validate all future blocks,
+starting from an initial trusted point. The cost of updating the sync committee
+depends on the size of the committee, the aggregate signature, and the Merkle
+path; in Ethereum this is estimated to approx. $25$KB~\cite{sync-committee}.
