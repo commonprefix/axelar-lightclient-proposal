@@ -1,5 +1,5 @@
 \section{Introduction}
-Blockchain technology has revolutionized the way we create trustless and decentralized applications, offering immense composability and the ability to build complex primitives. This is particularly evident in the realm of decentralized finance (DeFi), where applications have been layered on top of each other to unlock new levels of functionality. However, the blockchain landscape is far from homogenous, with multiple blockchains employing different consensus protocols, varying assumptions of guaranteeing safety and liveness, and optimization for specific types of applications.
+Blockchain technology has revolutionized the way we create trustless and decentralized applications, offering immense composability and the ability to build complex primitives. This is particularly evident in the realm of decentralized finance (DeFi), where applications have been layered on top of each other to unlock new levels of functionality. However, the blockchain landscape is far from homogeneous, with multiple blockchains employing different consensus protocols, varying assumptions of guaranteeing safety and liveness, and optimization for specific types of applications.
 
 The challenge arises when we consider interoperability between these diverse blockchains. Composing applications on various chains is particularly challenging, as they struggle to interact seamlessly, resulting in fragmentation of user base and liquidity.
 
@@ -19,20 +19,20 @@ Axelar adopts a modular architecture to connect with different chains. Each conn
 Currently, connectors utilize an on-chain voting mechanism within Axelar to verify transactions that occurred on the source chain. Validators who vouch to participate in a connector attestation are referred to as \emph{attestors}. To determine the voting power of an attestor, Axelar employs quadratic voting. Briefly, the voting power of an attestor is the square root of their total stake. This mechanism aims to ensure a fair distribution of influence among attestors, based on their stake. To participate in the connector attestation, attestors are required to run a full node of the source chain and have access to the full node's RPC (Remote Procedure Call) interface. This enables attestors to verify the finalized transactions on the source chain, before voting for them on Axelar.
 
 To initiate a bridge of data from the source chain to Axelar, a user interacts with an Axelar smart contract on the source chain. Subsequently, the user calls the corresponding connector module on Axelar, initiating the voting poll which is viewed by attestors. For each poll, an attestor decides whether to vote for or against it. To make an informed decision, the attestor queries the source chain's full node RPC and checks if the requested
-transactions have been finalized on the source chain. If a poll receives sufficient attestations, it is accepted, otherwise it is rejected. 
+transactions have been finalized on the source chain. If a poll receives sufficient attestations, it is accepted, otherwise it is rejected.
 
-This voting process forms the basis of verifying the source chain data into Axelar. 
+This voting process forms the basis of verifying the source chain data into Axelar.
 Nonetheless, for the connector construction to function securely and maintain liveness, both the source chain and Axelar are assumed safe and live. In addition, the (quadratic) voting power distribution among the attestors is assumed to have an honest majority.
 
 \subsection{Problem Statement}
-The current construction of Axelar relies on attestors running the full node of the source chain to verify transactions and vote in an informed manner. However, this requirement imposes significant costs on attestors.\footnote{Indicatively, running a full Ethereum node requires $4+$ CPU cores, $16+$ GB RAM, at least $1$ TB SSD, and $25$ Mbps of stable connection (source: \url{https://www.quicknode.com/guides/infrastructure/node-setup/ethereum-full-node-vs-archive-node}).} 
+The current construction of Axelar relies on attestors running the full node of the source chain to verify transactions and vote in an informed manner. However, this requirement imposes significant costs on attestors.\footnote{Indicatively, running a full Ethereum node requires $4+$ CPU cores, $16+$ GB RAM, at least $1$ TB SSD, and $25$ Mbps of stable connection (source: \url{https://www.quicknode.com/guides/infrastructure/node-setup/ethereum-full-node-vs-archive-node}).}
 Furthermore, as the Axelar network expands its support for additional chains, attestors will be required to run an increasing number of full nodes to verify transactions from these source chains.
 
 This scalability bottleneck hampers the growth and efficiency of the Axelar network. Therefore, attestors are often incentivized to rely on third-party service providers to run and maintain the full nodes on their behalf. Unfortunately, the Axelar network lacks a mechanism to detect whether attestors are utilizing third-party providers or running the full nodes themselves --- in fact, it is unclear if such behavior is detectable.
 
-This poses a significant centralization risk within the Axelar network. With a few dominant third-party providers in the market, attestors are likely to use the same service provider.\footnote{For example, at times $50$\% of Ethereum's transactions ran through one provider, Infura~\cite{infura}.} Consequently, if the third-party provider experiences a temporary compromise or breach, the entire Axelar network becomes vulnerable to attacks. The compromised provider could potentially censor transactions or even present incorrect transactions from the source chain to Axelar attestors, leading to financial losses for Axelar users.
+This poses a significant centralization risk within the Axelar network. With a few dominant third-party providers in the market, attestors are likely to use the same service provider.\footnote{For example, at times, $50$\% of Ethereum's transactions ran through one provider, Infura~\cite{infura}.} Consequently, if the third-party provider experiences a temporary compromise or breach, the entire Axelar network becomes vulnerable to attacks. The compromised provider could potentially censor transactions or even present incorrect transactions from the source chain to Axelar attestors, leading to financial losses for Axelar users.
 
-In addition, collusion among attestors can also jeopardize Axelar's security. If an adversary gains a temporary majority over the quadratic voting power, particularly for (long-tail) chains with only a few attestors, the network becomes susceptible to attacks. 
+In addition, collusion among attestors can also jeopardize Axelar's security. If an adversary gains a temporary majority over the quadratic voting power, particularly for (long-tail) chains with only a few attestors, the network becomes susceptible to attacks.
 
 In both situations outlined above, an honest Axelar validator who is not actively monitoring the source chain has no means to detect the attack and would accept incorrect data from it.
 
@@ -40,6 +40,7 @@ To address these challenges, we propose a construction that enables users or att
 
 In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with the requirements of Axelar, aiming to mitigate centralization risks, enhance security, and improve scalability.
 
+% TODO(shresth): Move preliminaries to a separate analysis section towards the end
 \subsection{Preliminaries}
 \noindent
 \textbf{Execution model.}
@@ -91,7 +92,7 @@ the end.
 \noindent
 \textbf{Ledgers.}
 We denote $\Ledger[\Pi][P][r]$ the result of executing the \emph{read} functionality by party $P$
-operating in ledger protocol $\Pi$ at round $r$. % Therefore, the ledger $\Ledger[\Pi][P][r]$ of party $P$ at round $r$ is a sequence of transactions. 
+operating in ledger protocol $\Pi$ at round $r$. % Therefore, the ledger $\Ledger[\Pi][P][r]$ of party $P$ at round $r$ is a sequence of transactions.
 We will write
 $a \in S$ for an element $a$ and a sequence $S$ if the element $a$ appears somewhere in
 the sequence $S$. For a ledger $L$ we will also use the notation $\tx \in L$ to mean that
@@ -223,16 +224,34 @@ round $r_2 \leq r_1 + u_s$.
   A bridge $\Lambda$ is \emph{secure} with safety $u_s \in \mathbb{N}$ and
   liveness $u_\ell \in \mathbb{N}$ during $I$ if it is safe with safety $u_s$ during $I$
   and live with liveness $u_\ell$ during $I$.
-\end{definition} 
+\end{definition}
 
 % - safety under dishonest majority in axelar network
-% - healing 
-% - incentives 
+% - healing
+% - incentives
 
+A \emph{light client} is a client that wishes to synchronize with the rest
+of the network, but has limited resources available in terms of communication,
+computation, and storage. One example of a limited resource computer is the
+on-chain smart contract infrastructure of Axelar, where computation and storage
+are expensive. The light client begins its lifecycle holding the genesis block
+and synchronizes to the current tip of the canonical chain once in a while.
+Our job when building a light client is, given a block that the light client
+has already downloaded sometime in the past, to allow the client to
+synchronize with the most recent chain tip.
+
+% TODO(shresth): Add a separate section before this to describe
+% the high-level architecture of the on-chain light client without
+% discussing the particularities of the Ethereum sync committee.
+% Concretely, talk about how the data moves from Ethereum to
+% Axelar when validators are dishonest and how they can be caught.
+
+% TODO(shresth): Add a figure here.
 \subsubsection{Ethereum Sync Committee}\label{subsec:sync-committee}
 
-Let us now provide a brief overview of Ethereum's \emph{sync
-committee}~\cite{sync-committee}. This feature was introduced in the system's
+One useful ingredient of the Ethereum ecosystem that enables the
+construction of efficient light clients is the so-called \emph{sync committee}~\cite{sync-committee}.
+This feature was introduced in the system's
 ``Altair'' hard fork and is specifically tailored for use of light clients, as
 we will discuss in the alternatives of Section~\ref{subsec:alternatives}.
 
@@ -240,19 +259,16 @@ The sync committee consists of $512$ of Ethereum validators. They are randomly
 selected, from the set of all validators, every sync committee period (approx.
 $1$ day).
 
-Each validator in the sync committee is continually online and signs the header
-of each block that is added to the chain's head on every slot. Before a new
+Each honest validator in the sync committee is continually online and signs the header
+of each block that is added to the chain's tip on every slot. Before a new
 period begins, the new sync committee is recorded on Ethereum's beacon chain.
 Therefore, the new committee is validated by both Ethereum's validators and the
 previous sync committee.
 
-Each light client is assumed to know the block header of some block. In the
-most basic case, this could be the header of the genesis block.
-
 We demonstrate the usage of the sync committee with the following example.
 
 Assume that a client $C$ holds the block header of some slot $N$, that is part
-of the sync committee period $X$. 
+of the sync committee period $X$.
 
 When $C$ wants to authenticate the header of a block at slot $N'$, which is
 part of the period $X+1$, it proceeds as follows.

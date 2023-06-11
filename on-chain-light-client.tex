@@ -57,14 +57,14 @@ produced by the validators on each block. To verify an Ethereum block, the
 light client checks:
 i) that the sampling process was done correctly (e.g., following a verifiable pseudorandom process);
 ii) that the provided signatures correspond to active Ethereum validators;
-iii) that enough signatures have been provided to guarantee the block's correctness. 
+iii) that enough signatures have been provided to guarantee the block's correctness.
 
 An advantage of this solution is the non-reliance on the sync committee. In
 particular, the only assumption that is needed is that Ethereum is safe and
 live (which is already assumed) and that the probability of sampling
 adversarial signatures is negligible.
 
-However, it also presents various shortcomings. 
+However, it also presents various shortcomings.
 First, Ethereum's consensus relies on Casper FFG~\cite{buterin2017casper} and
 LMD-GHOST. This is particularly complicated and it is unclear how a secure
 signature sampling process can be implemented.
@@ -73,7 +73,7 @@ validators at any point in time. In particular, assuming that the light client
 starts from a trusted block header, it is unclear how to obtain each following
 period's validators, in a succinct and efficient manner.
 
-\subsubsection{SPV Light Client (Sync committee)} 
+\subsubsection{SPV Light Client (Sync committee)}
 
 This solution makes direct use of Ethereum's sync committee. In particular,
 Axelar validators run an Ethereum light client, which keeps track of the sync
@@ -88,6 +88,7 @@ security and incentives should also be taken into account. In addition, this
 solution requires that at least one Axelar attestor is honest, in order to
 guarantee liveness.
 
+% TODO(shresth): rename to referreed, cite PoPoS
 \subsubsection{Optimistic Light Client}
 
 This solution makes use of Ethereum's sync committee in a more efficient
@@ -120,8 +121,9 @@ large enough to provide enough time for an honest challenge. Third, the dispute
 resolution mechanism can be both time-consuming and expensive, in terms of
 storage needed for revealing the sync committee chains.
 Since the bridge is expected to observe high traffic, these disadvantages make
-this solution particularly problematic. 
+this solution particularly problematic.
 
+% TODO(shresth): cite lazylight
 \subsubsection{Bisection Light Client}
 
 This solution is similar to the previous optimistic solution. In this case,
@@ -165,9 +167,10 @@ have been developed fairly recently.
 - holo2
 \textbf{--- DK: also not sure about these so leaving them for now ---}
 
+% TODO(shresth): add a table
 \subsubsection{Comparison}
 
-Let us now offer a summarized comparison of all outlined solutions above. 
+Let us now offer a summarized comparison of all outlined solutions above.
 
 \noindent\textbf{Interactivity.}
 Both SPV solutions (either sampling Ethereum validators' signatures or using
@@ -183,8 +186,8 @@ existential honestly of Axelar attestors, such that a fraudulent submission is
 challenged (within the contest period of time).
 % - safety assumptions
 %     - eth safety/liveness
-%     - axelar validators 
-%     - axelar attesters 
+%     - axelar validators
+%     - axelar attesters
 
 \noindent\textbf{Liveness Assumptions.}
 As with safety, all solutions require Ethereum to be live. In addition, all
@@ -208,7 +211,7 @@ In the SPV sampling solution, the proof size depends on the number of sampled
 (Ethereum validators') signatures, so it is unclear at this point how large it
 should be. In the SPV sync committee based solution, the proof size corresponds
 to the BLS signatures of the sync committee validators, which should be on the
-order of a few hundred bytes~\cite{sync-committee}. 
+order of a few hundred bytes~\cite{sync-committee}.
 \textbf{--- DK: TODO proof sizes for optimistic, bisection, SNARK ---}
 
 \noindent\textbf{Ethereum Sync Committee Reliance.}
