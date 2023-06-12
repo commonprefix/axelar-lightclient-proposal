@@ -259,11 +259,13 @@ The sync committee consists of $512$ of Ethereum validators. They are randomly
 selected, from the set of all validators, every sync committee period (approx.
 $1$ day).
 
-Each honest validator in the sync committee is continually online and signs the header
-of each block that is added to the chain's tip on every slot. Before a new
-period begins, the new sync committee is recorded on Ethereum's beacon chain.
-Therefore, the new committee is validated by both Ethereum's validators and the
-previous sync committee.
+Each honest validator in the sync committee is continually online and signs the
+header of each block that is added to the chain's tip on every slot. The sync
+committee is decided two periods before it takes effect. The root of the Merkle
+tree that defines the committee is published in the header of a block in the
+immediate period before the committee is activated. Consequently, when a block
+is validated in this period, the committee is authorized to take effect (at the
+beginning of its designated period).
 
 We demonstrate the usage of the sync committee with the following example.
 
