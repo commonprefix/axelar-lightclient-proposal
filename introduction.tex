@@ -34,9 +34,13 @@ This poses a significant centralization risk within the Axelar network. With a f
 
 In addition, collusion among attestors can also jeopardize Axelar's security. If an adversary gains a temporary majority over the quadratic voting power, particularly for (long-tail) chains with only a few attestors, the network becomes susceptible to attacks.
 
-In both situations outlined above, an honest Axelar validator who is not actively monitoring the source chain has no means to detect the attack and would accept incorrect data from it.
+In both situations outlined above, an honest Axelar validator who is not actively monitoring the source chain has no means to detect the attack and would accept incorrect data.
 
-To address these challenges, we propose a construction that enables users or attestors to verify the consensus of the source chain within the Axelar execution layer. This is accomplished through light and super-light client constructions, in order to avoid relying on an honest majority among attestors.
+To make matters worse, there currently exists no \emph{healing} process in Axelar. In particular, if the security is violated, Axelar's safety can be violated. Therefore, two honest Axelar nodes would finalize two diverging transaction histories. In this case, even if the honest majority assumption is restored, the two nodes cannot converge.
+
+To address these challenges, we propose a construction that enables users or attestors to verify the consensus of the source chain within the Axelar execution layer. This is accomplished through light and super-light client constructions of the source chain. This provides two main benefits. First, Axelar nodes no longer need to rely on an honest majority among attestors; instead, it suffices to assume that at least one attestor is honest. Second, the nodes will not finalize an incorrect source chain statement. Therefore, in the case when the honest majority assumption is violated, the honest Axelar nodes will not progress (that is, liveness is not guaranteed), but also they will not accept diverging blocks (therefore safety is satisfied).
+
+This is particularly important in the example of the malicious RPC providers. In the current scheme, if the providers attack the chain by submitting false information to the --- otherwise honest --- attestors, then Axelar cannot directly heal even after the attestors switch providers. This can be achieved though via an on-chain light client. Specifically, after the attestors switch providers (or run their own source chain nodes), liveness is restored and Axelar's nodes can continue from the point where they stalled.
 
 In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with the requirements of Axelar, aiming to mitigate centralization risks, enhance security, and improve scalability.
 
@@ -275,15 +279,14 @@ of the sync committee period $X$.
 When $C$ wants to authenticate the header of a block at slot $N'$, which is
 part of the period $X+1$, it proceeds as follows.
 
-First, $C$ validates the transaction that defines the information of the sync
-committee of period $X+1$. To do so, it requests the Merkle branch of the block
-in period $X$ that contains this transaction. To validate the block, $C$ checks
-that it has been signed by enough parties of the sync committee of period $X$.
+First, $C$ validates the sync committee of period $X+1$. To do so, it verifies
+that the Merkle root of the committee was published in a block header of period
+$X$.
 
-If the validation succeeds, $C$ updates its sync committee for $X+1$ as the one
-defined in the transaction. At this point, $C$ can validate every block header
-for each slot of period $X+1$, by obtaining the corresponding signatures of the
-sync committee of that period.
+Following, $C$ updates its sync committee for $X+1$ as the one defined in the
+Merkle tree. At this point, $C$ can validate every block header for each slot
+of period $X+1$, by obtaining the corresponding signatures of the sync
+committee of that period.
 
 Using this iterative process, the light client can validate all future blocks,
 starting from an initial trusted point. The cost of updating the sync committee
