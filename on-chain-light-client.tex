@@ -91,37 +91,39 @@ guarantee liveness.
 % TODO(shresth): rename to referreed, cite PoPoS
 \subsubsection{Optimistic Light Client}
 
-This solution makes use of Ethereum's sync committee in a more efficient
-(optimistic) manner. The goal of this mechanism is for the Axelar client to
-avoid updating the sync committee following the standard mechanism (described
-above).
+The goal of this mechanism is for the client to avoid updating the sync
+committee in full if the bridge faces many (sync committee) periods of
+inactivity.
 
-In more detail, at some point in time, an Axelar attestor submits a list of
-hashes, each corresponding to a chain of sync committee members. In essence,
-the first hash corresponds to the initial sync committee, the second hash to
-the following committee and so on.
+Specifically, consider the case when the bridge is updated every $x$ (sync
+committee) periods. In the previous solution, the Axelar nodes (who run an
+Ethereum light client) need to keep track of all $x$ sync committees, despite
+the lack of bridge traffic. In the current solution, there exists an Axelar
+attestor who submits a list of $x$ hashes, each corresponding to the chain of
+sync committees for the corresponding periods. If the attestor is honest, then
+the hash list should be correct. Therefore, the other Axelar nodes can
+``fast-forward'' the committees.
 
-After an attestor submits a list, there exists a contest period, during which
-another attestor can challenge the submission. The challenger provides an
-alternative list, at which point the dispute needs to be resolved. This is done
-by using Ethereum's light client mechanism, that is starting from the initial
-sync committee, each list is parsed until the point of dispute. At this point,
-one of the two lists will be revealed as fraudulent, since it should be
-impossible to provide the necessary signatures that validate its sync committee
-transition across periods.
+Nonetheless, the attestor might be malicious and submit an incorrect list. To
+cover this possibility, there exists a contest period, during which another
+attestor can challenge the first attestor's submission. The challenger provides
+an alternative list, at which point the dispute needs to be resolved.  This is
+done by identifying the point of divergence between the two lists. At this
+point, both attestors are required to submit proof of correct transition, that
+is to reveal the (sync committee) keys that correspond to the last agreed hash
+along with (this committee's) signatures on the keys that correspond to the
+first hash of disagreement. Since the sync committee is presumed honest, one of
+the two lists will be revealed as fraudulent, since it should be impossible to
+provide the necessary signatures that validate the transition under question.
 
-The benefit of this mechanism is that, in the optimistic case, when the
-attestor submits a valid list, the Axelar clients don't need to keep track of
-Ethereum's sync committee protocol.
+There are various benefits in this mechanism. First, the construction is simple
+and intuitive. Second, the proof's size is relatively small, equal to a hash's
+size times the number of sync committee periods per bridge synchronization.
 
-However, there exist various disadvantages. First, the mechanism assumes that
-at least one attestor is honest (in order to contest an invalid submission).
-Second, latency depends on the length of the contest period, which should be
-large enough to provide enough time for an honest challenge. Third, the dispute
-resolution mechanism can be both time-consuming and expensive, in terms of
-storage needed for revealing the sync committee chains.
-Since the bridge is expected to observe high traffic, these disadvantages make
-this solution particularly problematic.
+However, the advantage of this solution only manifests if the bridge is
+synchronized infrequently. If, for example, the bridge is synchronized every
+day (that is, one sync committee period), then the proof size is the same as the
+previous section's, while the latency increases due to the existence of the contest period.
 
 % TODO(shresth): cite lazylight
 \subsubsection{Bisection Light Client}
