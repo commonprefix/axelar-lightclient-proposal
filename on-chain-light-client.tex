@@ -9,37 +9,33 @@ offering our recommendation for this particular instance.
 \subsection{Merits of an On-Chain Light Client}
 
 There are various advantages in using an on-chain light client, compared to
-relying on the committee of attestors.
+relying on the committee of attestors. Briefly, this solution guarantees safety
+and, consequently, enables on-chain healing in the presence of temporary
+adversarial majority.  We note that our work focuses on the setting where the
+RPC providers, which attestors use to access Ethereum's full chain, get
+corrupted. In this case, the attestors are honest, but the data that they
+receive are corrupted.
 
-\noindent\textbf{Safety.}
-One of major benefit is the preservation of safety at all times, even if there
-exists a dishonest majority in the Axelar chain. In particular, a light client
-will not accept an incorrect statement about an Ethereum transaction,
-regardless of the security state of Axelar's chain.
-
+In detail, on-chain light clients preserve of \emph{bridge safety} at all
+times, since Axelar's honest nodes will not accept an
+incorrect statement about an Ethereum transaction.
+%
 This is in contrast with the existing design. Currently, the client accepts a
-statement as long as it is validated by the Axelar attestors. These attestors
-are chosen based on their stake on Axelar's chain. However, if the majority of
-Axelar's stake becomes dishonest temporarily, the set of attestors would also
-become adversarially-controlled. Consequently, the adversary could sign an
-incorrect statement about Ethereum's state, which the clients would accept.
+statement as long as it is validated by Axelar's attestors. If these attestors
+use rely on RPC providers, they might unwittingly validate incorrect (Ethereum)
+transaction data, which would be accepted by Axelar full nodes. Using an
+on-chain light client avoids this problematic scenario, since the Axelar nodes
+accept statements about Ethereum transactions only if accompanied by a valid
+proof. 
 
-Using an on-chain light client avoids this problematic scenario, since the
-client accepts a statement about Ethereum's state only as long as it is
-accompanied by a valid proof. This proof is generated either by Ethereum's
-validators or in a cryptographically unforgeable manner (e.g., using
-zero-knowledge), therefore it does not rely on Axelar's security.
-
-\noindent\textbf{Healing.}
-The preservation of safety opens the possibility of using a healing mechanism,
-in order to recover from a temporary adversarial majority in Axelar. In
-particular, in such case, Axelar participants could employ a social consensus
-mechanism, in order to remove the offending parties and restore honest
-majority. Since safety is guaranteed at all times, it would be straightforward
-to continue after the healing process ends from the last block for which safety
-holds.
-
-- incentives \textbf{--- DK: not sure what this is about, so leaving it here for now ---}
+Currently, if safety is violated it is unclear how Axelar could recover.
+Specifically, it cannot resolve the situation within the consensus protocol, so
+external intervention would be needed, e.g., a (slow and cumbersome) social
+consensus mechanism.  external intervention.
+The preservation of safety via the on-chain light client solution directly
+enables a healing mechanism. Specifically, Axelar's attestors could switch RPC
+providers and, after obtaining the correct Ethereum data, bridge liveness would
+be restored, whilst safety is guaranteed throughout the process.
 
 \subsection{On-Chain Light Client Alternatives}\label{subsec:alternatives}
 
