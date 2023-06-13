@@ -174,30 +174,37 @@ small enough to avoid increasing latency significantly.
 
 \subsubsection{SNARK Light Client}
 
-The final solution which is discussed here is based on zero-knowledge, namely
-SNARK proofs (Succinct Non-interactive ARguments of Knowledge).
+The final solution is based on zero-knowledge, namely SNARK proofs (Succinct
+Non-interactive ARguments of Knowledge). The goal of this solution is to reduce
+the proof of validity of each bridged Ethereum transaction.
 
-Briefly, an attestor creates a proof that an Ethereum block has been signed by
-enough members of the sync committee. Following, it publishes the block's
-header on Axelar, along with the proof, such that every Axelar client can
-validate it in a non-interactive manner.
+The setup of this solution is similar to the sync committee-based solution
+above. Specifically, each committee is published on Axelar, along with a proof
+of handover for the committee transitions. 
 
-One advantage of this solution is that SNARKs can be very efficient in terms of
-proof sizes. For example, a Groth16~\cite{EC:Groth16} proof consists of only
-$2$ group elements. However, we note that the problem under question is not one
-of efficient bootstrapping, as is the usual use case for SNARKs, but obtaining
-the latest state of Ethereum at any point in time. This is relevant because
-recursion, which is a major feature in terms of efficiency, can be used only on
-chains of increasing length, but not when facing incremental changes in a
-state, as is our case.
+In particular, when an attestor wants to bridge an Ethereum transaction to
+Axelar, it produces a zero-knowledge proof. This proof replaces the aggregate
+public key and signatures, which were used before for validation. Instead, it
+proves that there exists a quorum of at least $\frac{2}{3}$ sync committee
+members that have signed the transaction under question.
 
-One main disadvantage of this solution is implementation complexity. Securely
-implementing ZK-SNARKs can be particularly challenging, even more so since they
-have been developed fairly recently.
+The main advantage of this solution is that SNARKs can be very efficient in
+terms of proof sizes. For example, a Groth16~\cite{EC:Groth16} proof consists
+of only $2$ group elements. However, we note that the problem under question is
+not one of efficient bootstrapping, as is the usual use case for SNARKs, but
+obtaining the latest state of Ethereum at any point in time. This is relevant
+because recursion, which is a major feature in terms of efficiency, can be used
+only on chains of increasing length, which is not our case.
+
+One main disadvantage of this solution is implementation complexity and cost.
+Securely implementing ZK-SNARKs can be particularly challenging, even more so
+since they have been developed fairly recently. Additionally, the cost of
+generating a SNARK can be particularly high.
+\dimitris{if there are any published numbers on zk bridge costs in terms of \$, put them here}
 
 - plonk
 - holo2
-\textbf{--- DK: also not sure about these so leaving them for now ---}
+\dimitris{not sure about these so leaving them for now}
 
 % TODO(shresth): add a table
 \subsubsection{Comparison}
