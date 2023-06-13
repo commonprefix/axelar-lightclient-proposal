@@ -42,7 +42,10 @@ be restored, whilst safety is guaranteed throughout the process.
 We now present an array of solutions for the on-chain light client. For each
 solution we give a high-level overview, highlighting its mechanics as well as
 possible shortcomings. Each alternative offers different features and relies on
-different assumptions. A notable point is that all solutions, except the first,
+different assumptions. 
+
+We note that all solutions require that at least one Axelar attestor is honest,
+in order to guarantee liveness. Additionally, all solutions, except the first,
 rely on Ethereum's sync committee.
 
 \subsubsection{SPV Light Client (sampling validators)}
@@ -72,17 +75,43 @@ period's validators, in a succinct and efficient manner.
 \subsubsection{SPV Light Client (Sync committee)}
 
 This solution makes direct use of Ethereum's sync committee. In particular,
-Axelar validators run an Ethereum light client, which keeps track of the sync
-committees as described in Section~\ref{subsec:sync-committee}.
+each sync committee is recorded on Axelar. When an attestor wants to bridge a
+transaction from Ethereum to Axelar, it accompanies it with a proof of
+inclusion in a block that has been validated by the corresponding sync
+committee. Following, when an Axelar full nodes wants to validate an Ethereum
+transaction that has been bridged to Axelar, it first identifies (on Axelar's
+chain) the sync committee and that corresponds to the transaction and then
+validates the proof w.r.t. it.
+
+This scheme assumes that, at the bridge's onset, the sync committee is recorded
+on Axelar correctly. In other words, the first sync committee that is recorded
+on Axelar should be correct. Following, each update to the sync committee is
+accompanied by a proof of a handover, that is an Ethereum block that has been
+signed by the previous committee. Note that, even if Axelar's security is
+compromised, the adversary cannot produce a proof of a handover to an invalid
+sync committee (since this depends on the sync committee's security).
+Therefore, the honest Axelar nodes will always hold a valid list of sync
+committees (albeit this could possibly be outdated, if liveness is violated).
+
+Additionally, in order to validate an Ethereum transaction, Axelar's full nodes
+should have access to an Ethereum full node (in order to validate the proof).
+Again though, even if the full node is adversarial, it cannot convince the
+Axelar node of an invalid Ethereum transaction (safety violation), but only
+refuse to respond to the node's queries (safety violation); in this case, the
+Axelar node can simply switch Ethereum full nodes until it connects to an
+honest one.
 
 The major advantage of this solution is that it is straightforward to
 implement. In particular, the sync committee has already been implemented in
 Ethereum and there exists a large body of community projects and tools that
-could be reused in Axelar's case. Nonetheless, the concerns which were
-discussed in Section~\ref{subsec:sync-committee} around the committee's
-security and incentives should also be taken into account. In addition, this
-solution requires that at least one Axelar attestor is honest, in order to
-guarantee liveness.
+could be reused in Axelar's case, such as
+Kevlar\footnote{\url{https://github.com/lightclients/kevlar}} and
+Helios\footnote{\url{https://github.com/a16z/helios}}.
+
+There are some disadvantages with this solution though. First, it relies on the
+security of Ethereum's sync committee. Second, the storage requirements
+increase linearly over time, since each sync committee (which is updated
+approx. every day) is recorded on Axelar's chain.
 
 % TODO(shresth): rename to referreed, cite PoPoS
 \subsubsection{Optimistic Light Client}
