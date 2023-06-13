@@ -114,58 +114,63 @@ increase linearly over time, since each sync committee (which is updated
 approx. every day) is recorded on Axelar's chain.
 
 % TODO(shresth): rename to referreed, cite PoPoS
-\subsubsection{Optimistic Light Client}
+\subsubsection{Refereed Light Client}
 
-The goal of this mechanism is for the client to avoid updating the sync
-committee in full if the bridge faces many (sync committee) periods of
-inactivity.
+This mechanism makes use of Ethereum's sync committee in a manner similar as
+the previous solution, but aiming to reduce the storage requirements. 
 
-Specifically, consider the case when the bridge is updated every $x$ (sync
-committee) periods. In the previous solution, the Axelar nodes (who run an
-Ethereum light client) need to keep track of all $x$ sync committees, despite
-the lack of bridge traffic. In the current solution, there exists an Axelar
-attestor who submits a list of $x$ hashes, each corresponding to the chain of
-sync committees for the corresponding periods. If the attestor is honest, then
-the hash list should be correct. Therefore, the other Axelar nodes can
-``fast-forward'' the committees.
+In brief, the idea is to (optimistically) assume that an attestor provides
+honest data about the updated sync committees and enable a dispute resolution
+mechanism in case the attestor is malicious. Specifically, we assume that the
+bridge is updated every $x$ (sync committee) periods. In the previous
+solution, each committee is recorded on Axelar's chain. Here, there exists an
+Axelar attestor who collects the $x$ committees, each corresponding to the sync
+committees for the corresponding periods, and publishes a commitment to them on
+Axelar altogether. If the attestor is honest, then the commitment should be
+correct.  Therefore, the other Axelar nodes can ``fast-forward'' these $x$
+committees.
 
-Nonetheless, the attestor might be malicious and submit an incorrect list. To
-cover this possibility, there exists a contest period, during which another
-attestor can challenge the first attestor's submission. The challenger provides
-an alternative list, at which point the dispute needs to be resolved.  This is
-done by identifying the point of divergence between the two lists. At this
-point, both attestors are required to submit proof of correct transition, that
-is to reveal the (sync committee) keys that correspond to the last agreed hash
-along with (this committee's) signatures on the keys that correspond to the
-first hash of disagreement. Since the sync committee is presumed honest, one of
+Nonetheless, the attestor might be malicious and submit an incorrect
+commitment. To cover this possibility, there exists a contest period, during
+which another attestor can challenge the first attestor's submission. The
+challenger provides an alternative commitment, at which point the dispute needs
+to be resolved. This is done by opening both commitments and identifying the
+point of divergence between the two committee lists. At this point, both
+attestors are required to submit proof of correct transition, that is to reveal
+the (sync committee) keys that correspond to the last agreed committee along
+with (this committee's) signatures on the keys that correspond to the first
+committee of disagreement. Since the sync committee is presumed honest, one of
 the two lists will be revealed as fraudulent, since it should be impossible to
 provide the necessary signatures that validate the transition under question.
 
-There are various benefits in this mechanism. First, the construction is simple
-and intuitive. Second, the proof's size is relatively small, equal to a hash's
-size times the number of sync committee periods per bridge synchronization.
+We propose two manners in which the commitment can be implemented.
 
-However, the advantage of this solution only manifests if the bridge is
-synchronized infrequently. If, for example, the bridge is synchronized every
-day (that is, one sync committee period), then the proof size is the same as the
-previous section's, while the latency increases due to the existence of the contest period.
+\paragraph{Linear}
+In this case, the commitment is a list of hashes, with each hash corresponding
+to a sync committee. The main benefit of this solution is that disputes can be
+resolved easily, since the point of disagreement can be identified directly by
+parsing the two lists. However, the asymptotic complexity of this solution is
+again linear on the number of committees, albeit the constant factor (which is
+only a hash in the optimistic case) is significantly smaller than the previous
+solution.
 
 % TODO(shresth): cite lazylight
-\subsubsection{Bisection Light Client}
+\paragraph{Bisection}
+Here, the commitment is a Merkle tree, the leaves of which correspond to each
+sync committee. Now, the constant factor of the storage complexity is even
+smaller (in the optimistic case), since only one hash every $x$ committees
+needs to be published. However, dispute resolution is more costly, at
+logarithmic complexity on $x$ (since the Merkle branches of the two committees
+at the point of disagreement need to be revealed).
 
-This solution is similar to the previous optimistic solution. In this case,
-instead of submitting a list of hashes, the attestor organizes the sync
-committee hashes in a Merkle tree and submits its root.
-
-The main advantage over the previous solution is that the proof size is
-constant, in the optimistic case. In addition, in the case of a challenge, the
-parties need to reveal a logarithmic number of values, which correspond to the
-Merkle branch (hence the name ``bisection'', which refers to the dispute
-resolution mechanism).
-
-However, the improvements here are only incremental compared to the above
-optimistic alternative. Notably, the bisection solution suffers from the same
-disadvantages which, under high traffic, make it not particularly useful.
+Finally, we note that the advantage of the refereed light client solution only
+manifests if the bridge is synchronized infrequently and dispute resolutions
+are rare. If, for example, the bridge is synchronized every day (that is, $x =
+1$), then the benefit is marginal even in the optimistic case. In addition,
+implementing a dispute resolution mechanism securely adds complexity. Finally,
+the length of the contest period affects the bridge's latency, since it should
+be large enough s.t. an honest party can challenge an invalid commitment, but
+small enough to avoid increasing latency significantly.
 
 \subsubsection{SNARK Light Client}
 
