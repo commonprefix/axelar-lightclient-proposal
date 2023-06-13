@@ -12,13 +12,16 @@ people will likely be relevant to the implementation of this project:
   \item \textbf{Dimitris Lamprinos}
 \end{itemize}
 
-This project will be executed in $3$ phases which are described in detail below.
+This project will be executed in multiple phases which are described in detail below.
 
 \subsection{Phase 1: Architectural Design}
-During this phase, we will study the Axelar codebase in depth and design a suitable architecture in the form of a Go Cosmos module that will implement the Ethereum light client functionality on-chain.
-We will explore designs that minimally alter the existing Axelar codebase and respect the design principles of the ecosystem.
-The architecture will be designed in a fashion that will allow extending the light client to different source chains beyond Ethereum. Additionally, the architecture will be modular in a way that allows swapping the proof mechanism (e.g., SPV or ZK) so that it is possible to experiment with different proof mechanisms in the future.
-
+During this phase, we will study the Axelar codebase in depth and propose a suitable architecture consisting of a Go Cosmos module that will implement the on-chain Ethereum light client.
+We will explore avenues keeping the following principles in mind: 
+\begin{itemize}
+  \item \textbf{Respectful of previous work.} We will propose an architecture that requires minimal changes to the codebase while maintaining the existing design choices of the codebase.
+  \item \textbf{Extensibility.} The architecture will be designed in a fashion that will allow extending the light client to different source chains beyond Ethereum in the future  
+  \item \textbf{Modularitity.} Additionally, the architecture will be modular in a way that allows for upgrading to a different proof mechanism (e.g., SPV or ZK) so that the protocol is future-proof.
+\end{itemize}
 \noindent
 \textbf{Deliverables.} At the conclusion of this phase, we will deliver the following:
 
