@@ -206,44 +206,38 @@ generating a SNARK can be particularly high.
 - holo2
 \dimitris{not sure about these so leaving them for now}
 
-% TODO(shresth): add a table
 \subsubsection{Comparison}
 
-Let us now offer a summarized comparison of all outlined solutions above.
+Table~\ref{tab:comparison} summarizes the comparison of the alternatives
+presented above. Note that, in all cases, Ethereum is assumed safe and live, as
+well as, in order to guarantee bridge liveness, we assume that at least one
+Axelar attestor is honest (in some cases, this assumption is needed also for
+bridge safety).
 
-\noindent\textbf{Interactivity.}
-Both SPV solutions (either sampling Ethereum validators' signatures or using
-the sync committee), as well as the SNARK-based solution are non-interactive,
-in the sense that the proof can be validated by all other Axelar validators
-non-interactively. The optimistic and bisection solutions are interactive,
-since the validators need to actively engage in the case of a dispute.
-
-\noindent\textbf{Safety Assumptions.}
-All solutions require Ethereum to be safe. In the SPV and SNARK solutions, this
-is the only assumption. The optimistic and bisection solutions also assume
-existential honestly of Axelar attestors, such that a fraudulent submission is
-challenged (within the contest period of time).
-% - safety assumptions
-%     - eth safety/liveness
-%     - axelar validators
-%     - axelar attesters
-
-\noindent\textbf{Liveness Assumptions.}
-As with safety, all solutions require Ethereum to be live. In addition, all
-solutions require at least one Axelar attestor to be honest, in order to
-publish the updated Ethereum state along with the necessary proof.
-
-\noindent\textbf{Implementation Complexity.}
-For the SPV solution that utilizes the sync committee the implementation
-complexity is relatively low, since the sync committee is already offered as a
-feature on Ethereum and its incorporation in the Axelar client is fairly
-straightforward. The complexity of the optimistic and bisection alternatives is
-medium, since an analysis is required around the details of the dispute
-resolution mechanism and the duration of the contest period. Finally, the SPV
-sampling and the SNARK-based alternatives are highly complicated; in the
-former, a thorough analysis is needed on implementing a secure sampling
-mechanism; in the latter, implementing and using zero-knowledge proof systems
-is non-trivial.
+\begin{table}
+    \centering \def\arraystretch{1.5}
+    \begin{tabular}{|c|c|c|c|c|c|} 
+        \hline
+        \multirow{2}{*}{} & \multirow{2}{*}{ \textbf{Sampling} } & \multirow{2}{*}{ \textbf{Sync Committee} } & \multicolumn{2}{c|}{ \textbf{Refereed} } & \multirow{2}{*}{ \textbf{SNARK} } \\
+        \cline{4-5}
+        & & & \textbf{Linear} & \textbf{Bisection} & \\
+        \hline
+        \emph{Proof Size} & XXX & YYY & ZZZ & AAA & BBB \\
+        \hline
+        \emph{Non-interactive} & \cmark & \cmark & \xmark & \xmark & \cmark \\
+        \hline
+        \begin{tabular}[c]{@{}c@{}} \emph{Relies on} \\ \emph{Sync Committee} \end{tabular} & \xmark & \cmark & \cmark & \cmark & \cmark \\
+        \hline
+        \begin{tabular}[c]{@{}c@{}} \emph{Extra Safety} \\ \emph{Assumptions} \end{tabular} & - & - & \begin{tabular}[c]{@{}c@{}} Exists honest \\ Axelar attestor \end{tabular} & \begin{tabular}[c]{@{}c@{}} Exists honest \\ Axelar attestor \end{tabular} & - \\
+        \hline
+        \begin{tabular}[c]{@{}c@{}} \emph{Implementation} \\ \emph{Complexity} \end{tabular} & High & Low & Medium & Medium & High \\
+        \hline
+    \end{tabular}
+    \caption{Comparison of alternative solutions. All solutions assume that: i)
+    Ethereum is secure (safe and live); ii) to guarantee bridge liveness, there
+    exists an honest Axelar attestor.}
+    \label{tab:comparison}
+\end{table}
 
 \noindent\textbf{Proof Size.}
 In the SPV sampling solution, the proof size depends on the number of sampled
@@ -252,11 +246,6 @@ should be. In the SPV sync committee based solution, the proof size corresponds
 to the BLS signatures of the sync committee validators, which should be on the
 order of a few hundred bytes~\cite{sync-committee}.
 \textbf{--- DK: TODO proof sizes for optimistic, bisection, SNARK ---}
-
-\noindent\textbf{Ethereum Sync Committee Reliance.}
-All solutions, except the first, rely on a secure sync committee. In
-particular, if the sync committee becomes malicious then it can sign a
-malicious block header which would result in a compromise of Axelar's bridge.
 
 - accountability
 - historical validity
