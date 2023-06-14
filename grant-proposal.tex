@@ -4,12 +4,14 @@ We plan to implement this project in the course of $4-6$ months. Anyone from the
 can be involved on an as-needed basis depending on the expertise required. For example, the following
 people will likely be relevant to the implementation of this project:
 
-% TODO(shresth): add a description of each person's expertise and their role on this project
 \begin{itemize}
-  \item \textbf{Shresth Agrawal}
-  \item \textbf{Dionysis Zindros}
-  \item \textbf{Apostolos Tzinas}
-  \item \textbf{Dimitris Lamprinos}
+    \item \textbf{Dionysis Zindros} is a post-doctoral researcher at Stanford University. His research is focused on light and superlight clients, on which he did his Ph.D. dissertation, “Decentralized Blockchain Interoperability.” Some of his relevant published works include \href{https://eprint.iacr.org/2017/963.pdf}{Non-Interactive Proofs of Proof-of-Work}, \href{https://eprint.iacr.org/2018/1048.pdf}{Proof-of-Work Sidechains}, \href{https://eprint.iacr.org/2018/1048.pdf}{Proof-of-Stake
+      Sidechains}, \href{https://eprint.iacr.org/2021/623.pdf}{Mining in Logarithmic Space}, \href{https://arxiv.org/abs/2203.15968}{Light Clients for Lazy Blockchains}, \href{https://eprint.iacr.org/2019/1096.pdf}{Proof of Burn}, \href{https://eprint.iacr.org/2020/1122.pdf}{The Velvet Path to Superlight Blockchain Clients}, \href{https://eprint.iacr.org/2019/1444.pdf}{Compact Storage of Superblocks for NIPoPoW Applications}, \href{https://eprint.iacr.org/2020/138.pdf}{Smart Contract Derivatives}, and
+      \href{https://eprint.iacr.org/2020/927}{A Gas-Efficient Superlight Bitcoin Client in Solidity}. He co-authored the “Proofs of Proof of Proof of Stake in Sublinear Complexity” paper. He has published in top peer-reviewed conferences, such as IEEE Security \& Privacy, ESORICS, Financial Cryptography (and the Workshop on Trusted Smart Contracts), and Advances in Financial Technologies. Regarding practical software engineering experience, Dionysis has worked on the Product Security team at Twitter and the Incident Response Development team at Google. He has also presented at practical security conferences like Black Hat Europe and Black Hat Asia. 
+  \item \textbf{Shresth Agrawal} is a developer, researcher, and entrepreneur. He is one of the authors of the “Proofs of Proof of Stake in Sublinear Complexity” paper and was responsible for building the first ever light client for Ethereum, Kevlar. He has experience building efficient and secure algorithms, protocols, and smart contracts for several DeFi protocols. Previously, he worked at ParaSwap, where he was responsible for architecting and developing a large portion of the core aggregation algorithm. He was awarded by the President of India for his research on contagious diseases. Shresth completed his Bachelor’s degree from Jacobs University Bremen and is currently pursuing his Master’s degree at Technical University Munich. He is interested in Cryptography, Security, Consensus Protocols, Decentralized Finance, and Ethereum.
+  \item \textbf{Apostolos Tzinas} is a smart-contracts software engineer. He is pursuing a joint Bachelor’s and Master’s in Electrical and Computer Engineering at the National Technical University of Athens. Apostolos has extensive front-end software engineering experience working at Maya Insights and NutriDice, where he took on a full-stack software engineering role. He has worked with numerous programming languages and technical stacks. He loves algorithms, and as a high school student, he participated in Informatics Olympiads, such as the Junior Balkan Olympiad in Informatics. 
+  \item \textbf{Dimitris Lamprinos} is a software engineer based in Thessaloniki. He holds a Bachelor’s degree in Computer Science from the Aristotle University of Thessaloniki. Dimitris works on smart contract development and basic consensus development. He has significant experience in developing and scaling web2 applications in Amondo, Geekbot, and Vidpulse. He also has algorithmic cryptocurrency trading experience and has worked on developing and deploying smart contracts to the Ethereum
+    blockchain since the early days of ICO boom.
 \end{itemize}
 
 This project will be executed in multiple phases which are described in detail below.
@@ -66,14 +68,14 @@ During this phase, we will implement the execution logic of the on-chain Ethereu
   \item A test suite that verifies the correctness of the execution components of the Go module.
 \end{itemize}
 
-\subsection{Phase 4: Theory}
-% TODO(shresth): High level description of this phase
+\subsection{Phase 5: Theory, Deployment \& Audit}
+During this phase we will formalize the lightclient construction and prove its security guarantees. We will also deploy the light client to the Axelar's testnet and handover the codebase with documentation to the Axelar team. We also expect that the Axelar team will conduct an audit of the codebase before deploying it to the mainnet. During this phase we help the Axelar team with the audit process and fix any issues that may arise.
 
-\subsection{Phase 5: Deployment}
-% TODO(shresth): High level description of this phase
-
-% TODO(shresth): Talk about this with Sergei and consider whether this is part of the current grant or a future grant
+\noindent
+\textbf{Deliverables.} At the conclusion of this phase, we will deliver the following:
 \begin{itemize}
-  \item Testnet deployment of the Ethereum light client to the Axelar network (Lisbon). This deployment can be scoped in a future grant proposal.
-  \item Handover of the codebase to the Axelar team.
+  \item Testnet deployment of the Ethereum light client to the Axelar network (Lisbon).
+  \item Handover of the codebase to the Axelar team with proper documentation.
+  \item A LaTeX document that formalizes the light client construction and proves its security guarantees.
+  \item Any fixes to the codebase that may be required as a result of the audit.
 \end{itemize}

@@ -1,19 +1,10 @@
 \section{Introduction}
-% Blockchain technology has revolutionized the way we create trustless and decentralized applications, offering immense composability and the ability to build complex primitives. This is particularly evident in the realm of decentralized finance (DeFi), where applications have been layered on top of each other to unlock new levels of functionality. However, the blockchain landscape is far from homogeneous, with multiple blockchains employing different consensus protocols, varying assumptions of guaranteeing safety and liveness, and optimization for specific types of applications.
-% 
-% The challenge arises when we consider interoperability between these diverse blockchains. Composing applications on various chains is particularly challenging, as they struggle to interact seamlessly, resulting in fragmentation of user base and liquidity.
-
-% To address this issue, Cosmos\footnote{\url{https://cosmos.network}} has embraced the concept of ``The Internet of Blockchains''. In particular, it offers a modular blockchain stack that simplifies the creation of new blockchains via the Cosmos SDK. Cosmos chains can communicate and transact with each other through the Inter-Blockchain Protocol (IBC),\footnote{\url{https://ibcprotocol.dev}} enabling interoperability within the Cosmos ecosystem.
-% 
-% However, despite these strides which are to connect its own chains, a gap remains between the chains within and outside the Cosmos ecosystem. To bridge this divide, 
-
 Blockchain technology has revolutionized the way we create trustless and decentralized applications, offering immense composability and the ability to build complex primitives. However, the blockchain landscape is far from homogeneous, with multiple ecosystems that are based on their own consensus protocols and offer varying security and operation features. 
 
 Axelar\footnote{\url{https://axelar.network}} enables interoperability between diverse blockchain ecosystems. Axelar is a Cosmos\footnote{\url{https://cosmos.network}} blockchain, which aims to link the Cosmos ecosystem to non-Cosmos chains, such as Ethereum, Bitcoin, Polygon, and others.
 
-Ethereum, in particular, is one of the most widely used blockchains, hosting a multitude of decentralized applications spanning various sectors, including finance, gaming, and governance. Therefore, establishing a seamless and secure connection to Ethereum is of paramount importance for Axelar. % By enabling interoperability with Ethereum, Axelar unlocks its rich ecosystem of decentralized applications and services.
+Ethereum, in particular, is one of the most widely used blockchains, hosting a multitude of decentralized applications spanning various sectors, including finance, gaming, and governance. Therefore, establishing a seamless and secure connection to Ethereum is of paramount importance for Axelar. 
 
-% TODO: fix the contribution to be specific to solving the RPC centralization problem.
 This proposal focuses on building a trustless connection between Axelar and Ethereum. Our contribution is a design which both (i) guarantees safety of the bridge at all times and (ii) enables an on-chain healing process, in the face of a temporary adversarial majority, without the need of sophisticated social consensus mechanisms.
 
 \subsection{Current Construction}
@@ -23,7 +14,7 @@ Axelar adopts a modular architecture to connect with different chains. Each conn
 
 Currently, connectors utilize an on-chain voting mechanism within Axelar to verify transactions that occur on the source chain. The validators who participate in a connector attestation are called \emph{attestors}. To determine the voting power of an attestor, Axelar employs quadratic voting. Briefly, the voting power of an attestor is the square root of their total stake. This mechanism aims to ensure a fair distribution of influence among attestors, based on their stake. Attestors are required to run a full node of the source chain and have access to the full node's RPC (Remote Procedure Call) interface. This enables them to verify the finalized transactions on the source chain, before voting to bridge them on Axelar.
 
-To initiate a bridge of data from the source chain to Axelar, a user interacts with an Axelar smart contract on the source chain. Subsequently, the user accesses the connector module on Axelar and initiates a voting poll, which is viewed by attestors. For each poll, an attestor decides whether to vote for or against. To make an informed decision, the attestor queries the source chain's full node RPC and checks if the
+To bridge data from the source chain to Axelar, a user interacts with an Axelar smart contract on the source chain. Subsequently, the user accesses the connector module on Axelar and initiates a voting poll, which is viewed by attestors. For each poll, an attestor decides whether to vote for or against. To make an informed decision, the attestor queries the source chain's full node RPC and checks if the
 transaction under question has been finalized on the source chain. If a poll receives sufficient attestations, it is accepted, otherwise it is rejected.
 
 This voting process forms the basis of verifying the source chain data into Axelar.
@@ -39,17 +30,8 @@ In practice, attestors often rely on third-party service providers to run and ma
 % 
 This poses a significant centralization risk within the Axelar network. With a few dominant third-party providers in the market, attestors are likely to use the same service provider.\footnote{For example, at times, $50$\% of Ethereum's transactions ran through one provider, Infura~\cite{infura}.} If the third-party provider experiences a temporary compromise or breach, the entire Axelar network becomes vulnerable to attacks. 
 
-If an adversary gains a temporary majority over the quadratic voting power, particularly for (long-tail) chains with only a few attestors, the network becomes susceptible to attacks. The compromised provider could potentially censor transactions or even present incorrect transactions from the source chain to Axelar attestors. Transaction censorship is sinister, since a (otherwise honest) validator, who is not actively monitoring the source chain, has no means to detect it. 
-
-Safety violations though, when two (honest) Axelar validators might accept conflicting or incorrect transactions, can be catastrophic.
-Currently, there exists no \emph{healing} process in Axelar. In particular, a safety violation can only be resolved with out-of-band mechanisms.\footnote{In practice, the whole system would halt until an authoritative decision (e.g., via social consensus) is made on which transactions are correct and all honest validators are caught up.}
-
 % In addition, collusion among attestors can also jeopardize Axelar's security. 
 
 % In both situations outlined above, an honest Axelar validator who is not actively monitoring the source chain has no means to detect the attack and would accept incorrect data.
 
-To address these challenges, we propose a construction that enables users or attestors to verify the consensus of the source chain within the Axelar execution layer. This is accomplished through light and super-light client constructions of the source chain. This provides two main benefits. First, Axelar nodes no longer need to rely on an honest majority among attestors; instead, it suffices to assume that at least one attestor is honest. Second, the nodes will not finalize an incorrect (source chain) transaction. Therefore, if the honest majority assumption is violated temporarily, the honest Axelar nodes will not progress (that is, liveness is not guaranteed) but also not accept diverging blocks (so safety is satisfied).
-
-This is particularly important in the example of the malicious RPC providers. In the current scheme, if the providers attack the chain by submitting false information to the --- otherwise honest --- attestors, then Axelar cannot directly heal even after the attestors switch providers. This can be achieved via an on-chain light client. Specifically, after the attestors switch providers (or run their own source chain nodes), liveness is restored and Axelar's nodes can continue from the point where they stalled.
-
-In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with the requirements of Axelar, aiming to mitigate centralization risks, enhance security, and improve scalability. Our construction makes use of Ethereum's sync committee and guarantees bridge safety, assuming at least one Axelar attestor is honest, at a storage cost of \dimitris{add annual cost here} per year.
+To address this challenge, we propose a construction that enables users and attestors to verify the consensus of the source chain within the Axelar execution layer. This is accomplished through light and super-light client constructions of the source chain. In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with the requirements of Axelar, aiming to mitigate centralization risks, enhance security, and improve scalability. Our construction makes use of Ethereum's sync committee and guarantees bridge safety, assuming at least one Axelar attestor is honest.
