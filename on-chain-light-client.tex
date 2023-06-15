@@ -253,4 +253,21 @@ bridge safety).
 - historical validity
 \textbf{--- DK: also not sure about these so leaving them for now ---}
 
-\subsubsection{Our recommendation}
+\subsubsection*{Our recommendation}
+
+We recommend implementing the second option, that is an SPV client that relies
+on the sync committee.
+
+From the above comparison, it is evident that the
+first option (SPV client with Ethereum validator sampling) is rather
+experimental and requires significant research work before proceeding with
+implementation.
+
+Due to the high traffic that the bridge is expected to observe, it will most
+probably need to be updated at least on a daily basis, so the main
+benefit of the refereed options would be lost.
+
+Finally, the exceptional cost of creating SNARK proofs at this point in time
+makes it prohibitively expensive as an option. Nonetheless, we will design the
+bridge in a modular way, such that a SNARK solution can be easily incorporated
+in the future, when proof creation becomes more cost efficient.
