@@ -2,11 +2,13 @@
 \newif\ifonecolumn
 \newif\iflncs
 \newif\ifccs
+\newif\ifarticle
 \newif\ifanonymous
 \newif\iftoday
 \todaytrue
 % \ccstrue % pick one: LNCS or CCS (and `make clean`)
-\lncstrue
+% \lncstrue
+\articletrue
 % \anonymoustrue
 
 \ifccs
@@ -22,6 +24,24 @@
 \ifccs
 \documentclass[sigconf, anonymous]{acmart}
 \input{ccs-preamble}
+\fi
+\ifarticle
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+
+\setcounter{tocdepth}{2}
+\makeatother
+\usepackage[hidelinks, bookmarksopen=true]{hyperref}
+\usepackage{bookmark}
+
+\usepackage{geometry}
+\geometry{a4paper,total={170mm,237mm},left=32mm,right=32mm}
 \fi
 
 \usepackage{preamble}
