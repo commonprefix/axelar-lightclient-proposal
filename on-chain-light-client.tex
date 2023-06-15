@@ -111,7 +111,9 @@ Helios\footnote{\url{https://github.com/a16z/helios}}.
 There are some disadvantages with this solution though. First, it relies on the
 security of Ethereum's sync committee. Second, the storage requirements
 increase linearly over time, since each sync committee (which is updated
-approx. every day) is recorded on Axelar's chain.
+approx. every day) is recorded on Axelar's chain. This can result in
+significant storage overhead, since the mechanism requires approx. $25$KB per
+committee~\cite{sync-committee}.
 
 % TODO(shresth): rename to referreed, cite PoPoS
 \subsubsection{Refereed Light Client}
@@ -190,11 +192,12 @@ members that have signed the transaction under question.
 
 The main advantage of this solution is that SNARKs can be very efficient in
 terms of proof sizes. For example, a Groth16~\cite{EC:Groth16} proof consists
-of only $2$ group elements. However, we note that the problem under question is
-not one of efficient bootstrapping, as is the usual use case for SNARKs, but
-obtaining the latest state of Ethereum at any point in time. This is relevant
-because recursion, which is a major feature in terms of efficiency, can be used
-only on chains of increasing length, which is not our case.
+of only $2$ group elements, that is approx. $209$ bytes. However, we note that
+the problem under question is not one of efficient bootstrapping, as is the
+usual use case for SNARKs, but obtaining the latest state of Ethereum at any
+point in time. This is relevant because recursion, which is a major feature in
+terms of efficiency, can be used only on chains of increasing length, which is
+not our case.
 
 One main disadvantage of this solution is implementation complexity and cost.
 Securely implementing ZK-SNARKs can be particularly challenging, even more so
@@ -222,7 +225,7 @@ bridge safety).
         \cline{4-5}
         & & & \textbf{Linear} & \textbf{Bisection} & \\
         \hline
-        \emph{Proof Size} & XXX & YYY & ZZZ & AAA & BBB \\
+        \begin{tabular}[c]{@{}c@{}} \emph{Proof Size} \\ \emph{(Annual)} \end{tabular} & Unclear & $25 \cdot 365$ KB & $(25\text{KB} + x \cdot 32\text{B}) \cdot \frac{365}{x}$ & $(25\text{KB} + 32\text{B}) \cdot \frac{365}{x}$ & $(209 + 32) \cdot 365$ B \\
         \hline
         \emph{Non-interactive} & \cmark & \cmark & \xmark & \xmark & \cmark \\
         \hline
@@ -232,20 +235,18 @@ bridge safety).
         \hline
         \begin{tabular}[c]{@{}c@{}} \emph{Implementation} \\ \emph{Complexity} \end{tabular} & High & Low & Medium & Medium & High \\
         \hline
+        \begin{tabular}[c]{@{}c@{}} \emph{Proof Construction} \\ \emph{Cost} \end{tabular} & Low & Low & Low & Low & High \\
+        \hline
     \end{tabular}
     \caption{Comparison of alternative solutions. All solutions assume that: i)
     Ethereum is secure (safe and live); ii) to guarantee bridge liveness, there
-    exists an honest Axelar attestor.}
+    exists an honest Axelar attestor. In the refereed case, we assume that the
+    bridge is updated every $x$ days (where $1$ sync committee period is equal
+    to approx. $1$ day). Also, in the refereed case we compute the best-case
+    scenario, where no disputes occur. In the SNARK case we assume the usage of
+    Groth16 proofs.}
     \label{tab:comparison}
 \end{table}
-
-\noindent\textbf{Proof Size.}
-In the SPV sampling solution, the proof size depends on the number of sampled
-(Ethereum validators') signatures, so it is unclear at this point how large it
-should be. In the SPV sync committee based solution, the proof size corresponds
-to the BLS signatures of the sync committee validators, which should be on the
-order of a few hundred bytes~\cite{sync-committee}.
-\textbf{--- DK: TODO proof sizes for optimistic, bisection, SNARK ---}
 
 - accountability
 - historical validity
