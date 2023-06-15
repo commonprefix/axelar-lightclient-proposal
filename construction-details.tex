@@ -34,7 +34,7 @@ sync committee signatures and are of two types:
 \begin{itemize}
     \item \textbf{Update Latest Sync Committee.} This proof validates the sync
         committee handover, that is updating the committee from one period to
-        the next. It can be generated using Ethereum's beacon chain API,
+        the next. It can be generated using Ethereum's beacon chain API,\footnote{\url{https://ethereum.github.io/beacon-APIs}}
         specifically the endpoint
         \texttt{/eth/v1/beacon/light\_client/updates}.
         The proof's verification involves checking the BLS aggregate signature
