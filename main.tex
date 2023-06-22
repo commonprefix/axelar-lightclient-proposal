@@ -7,8 +7,8 @@
 \newif\iftoday
 \todaytrue
 % \ccstrue % pick one: LNCS or CCS (and `make clean`)
-% \lncstrue
-\articletrue
+\lncstrue
+% \articletrue
 % \anonymoustrue
 
 \ifccs
@@ -51,11 +51,11 @@
 
 \import{./}{body.tex}
 
-\vfill
-\pagebreak
-\iflncs
-\thispagestyle{plain}
-\fi
+% \vfill
+% \pagebreak
+% \iflncs
+% \thispagestyle{plain}
+% \fi
 
 \ifccs
   \bibliographystyle{ACM-Reference-Format}
@@ -65,6 +65,8 @@
 
 \pdfbookmark[section]{References}{references}
 \bibliography{biblio,crypto,pubs}
+
+\import{./}{appendix.tex}
 
 \import{./}{commonprefix.tex}
 

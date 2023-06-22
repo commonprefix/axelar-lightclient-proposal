@@ -6,10 +6,8 @@ The purpose of the bridge is to relay events or information that take place on
 the source side to the destination side. In particular, the parties that
 maintain the bridge transmit \emph{cross-chain} transactions, such that a
 transaction on the source side is represented by an ``image'' on the
-destination side.
-
-There are two core properties that a secure bridge should guarantee: safety and
-liveness.
+destination side. There are two core properties that a secure bridge should 
+guarantee: safety and liveness.
 
 \paragraph{Bridge Safety.}
 Bridge safety mandates that a transaction appears on the destination side \emph{only if} it has first
@@ -21,37 +19,23 @@ destination without its ``pre-image'' having appeared on the source side.
 In essence, if safety is guaranteed, an adversary cannot create money on the
 destination side without having paid on the source side.
 %
-Figure~\ref{fig:bridge-safety} illustrates bridge safety.
-The party $P_2$ first observes the transaction image $\tx$ on the destination
-side ($\Pi_2$) at time $r_1$, and expects another party $P_1$ to have already
-seen the transaction's pre-image $\phi^{-1}(\tx)$ on the source side ($\Pi_1$).
-Note that, due to network and consensus delays, this may be observed with a
-(bounded) delay.
-
-\begin{figure}
-    \center
-    \includegraphics[width=0.8\columnwidth]{figures/bridge-safety.pdf}
-    \caption{Bridge safety}
-    \label{fig:bridge-safety}
-\end{figure}
+% Figure~\ref{fig:bridge-safety} illustrates bridge safety.
+% The party $P_2$ first observes the transaction image $\tx$ on the destination
+% side ($\Pi_2$) at time $r_1$, and expects another party $P_1$ to have already
+% seen the transaction's pre-image $\phi^{-1}(\tx)$ on the source side ($\Pi_1$).
+% Note that, due to network and consensus delays, this may be observed with a
+% (bounded) delay.
 
 \paragraph{Bridge Liveness.}
 Bridge liveness ensures that a transaction which appears on the source side will eventually make
 it to the destination side. Intuitively, this guarantees that \emph{good things happen}, that is whenever an
 honest party attempts to cross the bridge, it will successfully do so.
-A visual depiction of bridge liveness is shown in Figure~\ref{fig:bridge-liveness}.
-% Even though our treatment is general to all ledger protocols and not particular to blockchains,
-% here we illustrate a blockchain example. 
-A block containing transaction $\tx$ appears in the source side ($\Pi_1$) in the view
-of a party $P_1$ at time $r_1$. Soon after, in round $r_2 \leq r_1 + u\ell$, the corresponding transaction image
-$\phi(\tx)$ appears in the view of another party $P_2$ on the destination side ($\Pi_2$).
-
-\begin{figure}
-    \center
-    \includegraphics[width=0.7\columnwidth]{figures/bridge-liveness.pdf}
-    \caption{Bridge liveness}
-    \label{fig:bridge-liveness}
-\end{figure}
+% A visual depiction of bridge liveness is shown in Figure~\ref{fig:bridge-liveness}.
+% % Even though our treatment is general to all ledger protocols and not particular to blockchains,
+% % here we illustrate a blockchain example. 
+% A block containing transaction $\tx$ appears in the source side ($\Pi_1$) in the view
+% of a party $P_1$ at time $r_1$. Soon after, in round $r_2 \leq r_1 + u\ell$, the corresponding transaction image
+% $\phi(\tx)$ appears in the view of another party $P_2$ on the destination side ($\Pi_2$).
 
 \subsubsection{Light Clients}
 
@@ -64,14 +48,6 @@ and synchronizes to the current tip of the canonical chain once in a while.
 Our job when building a light client is, given a block that the light client
 has already downloaded sometime in the past, to allow the client to
 synchronize with the most recent chain tip.
-
-% TODO(shresth): Add a separate section before this to describe
-% the high-level architecture of the on-chain light client without
-% discussing the particularities of the Ethereum sync committee.
-% Concretely, talk about how the data moves from Ethereum to
-% Axelar when validators are dishonest and how they can be caught.
-
-% TODO(shresth): Add a figure here.
 
 \subsubsection{Ethereum Sync Committee}\label{subsec:sync-committee}
 
@@ -86,11 +62,10 @@ selected, from the set of all validators, every sync committee period (approx.
 $1$ day). Each honest validator in the sync committee is continually online and
 signs the header of each block that is added to the chain's tip on every slot. 
 
-The sync committee of period $X$ is decided two periods before it takes effect,
-that is during period $X-1$. The root of the Merkle tree that defines the
-committee is published in the header of each block in the immediate period
-before it is activated, that is in period $X-1$, along with the root of that
-($X-1$) period's active committee. Consequently, when a block is validated in
+The sync committee of period $X$ is decided one periods in advance,
+that is the beginning of period $X-1$. The root of current sync committee and 
+the next sync committee is stored in the Ethereum block header. 
+Consequently, when a block is validated in
 this period, the committee is authorized to take effect at the beginning of its
 designated period. Crucially, the existence of a block, which contains (in its
 header) the roots of both the active and the following committee can serve as

@@ -1,5 +1,6 @@
-\section{Theoretical Analysis}
-
+\subsection{Theoretical Analysis}
+In this section we present the model for the theoretical analysis of the bridge framework. 
+We also present conjectures that we plan to prove if the grant is approved.
 \subsection{Preliminaries}
 \noindent
 \textbf{Execution model.}
@@ -138,12 +139,26 @@ safety (Definition~\ref{def:bridge-safety}) and liveness (Definition~\ref{def:br
   $\phi^{-1}(\tx) \in \Ledger[\Pi_1][P_1][r_2]$.
 \end{definition}
 
+\begin{figure}
+    \center
+    \includegraphics[width=0.8\columnwidth]{figures/bridge-safety.pdf}
+    \caption{Bridge safety}
+    \label{fig:bridge-safety}
+\end{figure}
+
 \begin{definition}[Bridge Liveness]\label{def:bridge-liveness}
   A bridge protocol $\Lambda(\Pi_1, \Pi_2)$ is \emph{live} with \emph{liveness} $u_\ell \in \mathbb{N}$
   during $I$ if, for all honest parties $P_1$ of $\Pi_1$ and $P_2$ of $\Pi_2$ and for all rounds
   $r_1, r_2 \in I$ with $r_2 \geq r_1 + u_\ell$ we have that, whenever $(t, \tx) \in \Ledger[\Pi_1][P_1][r_1]$
   with $t \in I$ and $\phi(\tx) \neq \bot$, then $\phi(\tx) \in \Ledger[\Pi_2][P_2][r_2]$.
 \end{definition}
+
+\begin{figure}
+    \center
+    \includegraphics[width=0.8\columnwidth]{figures/bridge-liveness.pdf}
+    \caption{Bridge liveness}
+    \label{fig:bridge-liveness}
+\end{figure}
 
 \begin{definition}[Bridge Security]\label{def:bridge-security}
   A bridge $\Lambda$ is \emph{secure} with safety $u_s \in \mathbb{N}$ and

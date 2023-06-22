@@ -202,12 +202,26 @@ not our case.
 One main disadvantage of this solution is implementation complexity and cost.
 Securely implementing ZK-SNARKs can be particularly challenging, even more so
 since they have been developed fairly recently. Additionally, the cost of
-generating a SNARK can be particularly high.
-\dimitris{if there are any published numbers on zk bridge costs in terms of \$, put them here}
-
-- plonk
-- holo2
-\dimitris{not sure about these so leaving them for now}
+generating a SNARK can be particularly high. For example,
+% have expensive provers. For example,
+according to \cite{zkbridge}, proving consensus (of $128$ validators)
+on \emph{one} Cosmos block
+% (with $128$ validators)
+takes $18$ seconds on $32$ instances of Amazon AWS \texttt{c5.24xlarge}.
+(We are unable to independently reproduce this finding because the authors of
+zkBridge have not disclosed their code.)
+% The implementation of zkBridge is not open source, so we could
+% not reproduce the calculations.
+At Cosmos' block rate of $1$ block per second,
+that would require
+% The paper's experiments cost
+$18 \times 32$ continuously operating \texttt{c5.24xlarge} instances,
+costing annually
+\$12,967,488 on Amazon AWS (annual pricing, \texttt{us-east-1} region, June 2023),
+or \$1,749,600 on Hetzner's equivalents.
+Scaling this proportionally for Ethereum
+($\times 4$ for sync committee size $512$, $/12$ for block rate $1$ block per $12$ seconds)
+yields an estimate of \$583,333 annually.
 
 \subsubsection{Comparison}
 
@@ -218,7 +232,8 @@ Axelar attestor is honest (in some cases, this assumption is needed also for
 bridge safety).
 
 \begin{table}
-    \centering \def\arraystretch{1.3}
+    \centering %\def\arraystretch{1.3}
+    \resizebox{\columnwidth}{!}{
     \footnotesize
     \begin{tabular}{|c|c|c|c|c|c|} 
         \hline
@@ -226,19 +241,20 @@ bridge safety).
         \cline{4-5}
         & & & \textbf{Linear} & \textbf{Bisection} & \\
         \hline
-        \begin{tabular}[c]{@{}c@{}} \emph{Proof Size} \\ \emph{(Annual)} \end{tabular} & Unclear & $25 \cdot 365$ KB & $(25\text{KB} + x \cdot 32\text{B}) \cdot \frac{365}{x}$ & $(25\text{KB} + 32\text{B}) \cdot \frac{365}{x}$ & $(209 + 32) \cdot 365$ B \\
+        \begin{tabular}[c]{@{}c@{}} \emph{Proof Size} \\ \emph{(Annual)} \end{tabular} & $365 \cdot 25$ KB & $365 \cdot 25$ KB & $\frac{365}{x} \cdot (25\text{KB} + x \cdot 32\text{B})$ & $\frac{365}{x} \cdot  (25\text{KB} + 32\text{B})$ & $365 \cdot (209 + 32)$ B \\
         \hline
         \emph{Non-interactive} & \cmark & \cmark & \xmark & \xmark & \cmark \\
         \hline
-        \begin{tabular}[c]{@{}c@{}} \emph{Relies on} \\ \emph{Sync Committee} \end{tabular} & \xmark & \cmark & \cmark & \cmark & \cmark \\
+        \begin{tabular}[c]{@{}c@{}} \emph{Doesn't rely on} \\ \emph{Sync Committee} \end{tabular} & \cmark & \xmark & \xmark & \xmark & \xmark \\
         \hline
         \begin{tabular}[c]{@{}c@{}} \emph{Extra Safety} \\ \emph{Assumptions} \end{tabular} & - & - & \begin{tabular}[c]{@{}c@{}} Exists honest \\ Axelar attestor \end{tabular} & \begin{tabular}[c]{@{}c@{}} Exists honest \\ Axelar attestor \end{tabular} & - \\
         \hline
         \begin{tabular}[c]{@{}c@{}} \emph{Implementation} \\ \emph{Complexity} \end{tabular} & High & Low & Medium & Medium & High \\
         \hline
-        \begin{tabular}[c]{@{}c@{}} \emph{Proof Construction} \\ \emph{Cost} \end{tabular} & Low & Low & Low & Low & High \\
+        \begin{tabular}[c]{@{}c@{}} \emph{Prover Cost}\\ \emph{Annually} \end{tabular} & \$600  & \$600  & \$600 & \$600 & >\$500,000 \\
         \hline
     \end{tabular}
+    }
     \caption{Comparison of alternative solutions. All solutions assume that: i)
     Ethereum is secure (safe and live); ii) to guarantee bridge liveness, there
     exists an honest Axelar attestor. In the refereed case, we assume that the
@@ -248,10 +264,6 @@ bridge safety).
     Groth16 proofs.}
     \label{tab:comparison}
 \end{table}
-
-- accountability
-- historical validity
-\textbf{--- DK: also not sure about these so leaving them for now ---}
 
 \subsubsection*{Our recommendation}
 
