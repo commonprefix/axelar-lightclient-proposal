@@ -2,10 +2,8 @@
 
 In this section, we discuss the construction and implementation details 
 of the suggested SPV style sync committee based light client. Note that the details of 
-the contruction are not final and are subject to change.
-
-The client will be implemented as a Go cosmos module. On a high level, the new
-construction would work as follows:
+the contruction are not final and are subject to change. The client will be implemented 
+as a Go cosmos module. On a high level, the new construction would work as follows:
 \begin{enumerate}
     \item A user initiates the bridge transfer by sending a transaction to a
         designated smart contract on the Ethereum (source) chain, similar to
@@ -16,21 +14,19 @@ construction would work as follows:
         transaction is finalized; if so, they generate a light client proof with
         two components: (i) a consensus verification proof; (ii) an
         execution verification proof.
-    \item A user submits the attestors' proof on the Axelar (destination)
+    \item The attestor submits this proof on the Axelar (destination)
         chain.
     \item The proof is verified on-chain by the Axelar full nodes; if the proof
         is valid, the transaction is executed on the Axelar chain.
 \end{enumerate}
 
-The client module will consist of two main components: Consensus Verification
-and Execution Verification.
-
 \subsection{Consensus Verification}
 
 This module is responsible for keeping track of the latest finalized block and
-the latest sync committee. Using this information, it is used to generate and
-validate consensus verification proofs. These proofs mainly include aggregate
-sync committee signatures and are of two types:
+the latest sync committee. To verify the finalized block and the sync committee 
+we use the aggregate sync committee signatures as a proof. Now we will discuss
+how we can obtain this proof using existing beacon chain APIs and how these proofs
+can be verified on chain.
 \begin{itemize}
     \item \textbf{Update Latest Sync Committee.} This proof validates the sync
         committee handover, that is updating the committee from one period to
@@ -52,7 +48,7 @@ sync committee signatures and are of two types:
 This component is responsible for generating and verifying the execution
 verification proof. We note that the scope of this grant proposal includes only
 verifying if a transaction is included in a block or a certain event was
-released from by a smart contract. 
+released by a smart contract. 
 
 The execution proof mainly constitutes of a Merkle inclusion proof of the
 relevant transaction or event to the finalized block header received from the

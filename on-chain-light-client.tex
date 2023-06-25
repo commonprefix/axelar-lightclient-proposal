@@ -1,43 +1,43 @@
 \section{On-Chain Light Client}
 
-In this section, we explore on-chain light clients as a solution for
-implementing a bridge between Axelar and Ethereum. First, we discuss the
-high-level benefits of such construction. Following, we review multiple
-candidate solutions for implementing on-chain light clients, before finally
-offering our recommendation for this particular instance.
+% In this section, we explore on-chain light clients as a solution for
+% implementing a bridge between Axelar and Ethereum. First, we discuss the
+% high-level benefits of such construction. Following, we review multiple
+% candidate solutions for implementing on-chain light clients, before finally
+% offering our recommendation for this particular instance.
 
-\subsection{Merits of an On-Chain Light Client}
+%\subsection{Merits of an On-Chain Light Client}
 
-There are various advantages in using an on-chain light client, compared to
-relying on the committee of attestors. Briefly, this solution guarantees safety
-and, consequently, enables on-chain healing in the presence of temporary
-adversarial majority.  We note that our work focuses on the setting where the
-RPC providers, which attestors use to access Ethereum's full chain, get
-corrupted. In this case, the attestors are honest, but the data that they
-receive are corrupted.
+%There are various advantages in using an on-chain light client, compared to
+%relying on the committee of attestors. Briefly, this solution guarantees safety
+%and, consequently, enables on-chain healing in the presence of temporary
+%adversarial majority.  We note that our work focuses on the setting where the
+%RPC providers, which attestors use to access Ethereum's full chain, get
+%corrupted. In this case, the attestors are honest, but the data that they
+%receive are corrupted.
 
-In detail, on-chain light clients preserve of \emph{bridge safety} at all
-times, since Axelar's honest nodes will not accept an
-incorrect statement about an Ethereum transaction.
-%
-This is in contrast with the existing design. Currently, the client accepts a
-statement as long as it is validated by Axelar's attestors. If these attestors
-use rely on RPC providers, they might unwittingly validate incorrect (Ethereum)
-transaction data, which would be accepted by Axelar full nodes. Using an
-on-chain light client avoids this problematic scenario, since the Axelar nodes
-accept statements about Ethereum transactions only if accompanied by a valid
-proof. 
+%In detail, on-chain light clients preserve of \emph{bridge safety} at all
+%times, since Axelar's honest nodes will not accept an
+%incorrect statement about an Ethereum transaction.
+%%
+%This is in contrast with the existing design. Currently, the client accepts a
+%statement as long as it is validated by Axelar's attestors. If these attestors
+%use rely on RPC providers, they might unwittingly validate incorrect (Ethereum)
+%transaction data, which would be accepted by Axelar full nodes. Using an
+%on-chain light client avoids this problematic scenario, since the Axelar nodes
+%accept statements about Ethereum transactions only if accompanied by a valid
+%proof. 
 
-Currently, if safety is violated it is unclear how Axelar could recover.
-Specifically, it cannot resolve the situation within the consensus protocol, so
-external intervention would be needed, e.g., a (slow and cumbersome) social
-consensus mechanism.  external intervention.
-The preservation of safety via the on-chain light client solution directly
-enables a healing mechanism. Specifically, Axelar's attestors could switch RPC
-providers and, after obtaining the correct Ethereum data, bridge liveness would
-be restored, whilst safety is guaranteed throughout the process.
+%Currently, if safety is violated it is unclear how Axelar could recover.
+%Specifically, it cannot resolve the situation within the consensus protocol, so
+%external intervention would be needed, e.g., a (slow and cumbersome) social
+%consensus mechanism.  external intervention.
+%The preservation of safety via the on-chain light client solution directly
+%enables a healing mechanism. Specifically, Axelar's attestors could switch RPC
+%providers and, after obtaining the correct Ethereum data, bridge liveness would
+%be restored, whilst safety is guaranteed throughout the process.
 
-\subsection{On-Chain Light Client Alternatives}\label{subsec:alternatives}
+% \subsection{On-Chain Light Client Alternatives}\label{subsec:alternatives}
 
 We now present an array of solutions for the on-chain light client. For each
 solution we give a high-level overview, highlighting its mechanics as well as
@@ -93,18 +93,18 @@ sync committee (since this depends on the sync committee's security).
 Therefore, the honest Axelar nodes will always hold a valid list of sync
 committees (albeit this could possibly be outdated, if liveness is violated).
 
-Additionally, in order to validate an Ethereum transaction, Axelar's full nodes
-should have access to an Ethereum full node (in order to validate the proof).
-Again though, even if the full node is adversarial, it cannot convince the
-Axelar node of an invalid Ethereum transaction (safety violation), but only
-refuse to respond to the node's queries (safety violation); in this case, the
-Axelar node can simply switch Ethereum full nodes until it connects to an
-honest one.
+% Additionally, in order to validate an Ethereum transaction, Axelar's full nodes
+% should have access to an Ethereum full node (in order to validate the proof).
+% Again though, even if the full node is adversarial, it cannot convince the
+% Axelar node of an invalid Ethereum transaction (safety violation), but only
+% refuse to respond to the node's queries (safety violation); in this case, the
+% Axelar node can simply switch Ethereum full nodes until it connects to an
+% honest one.
 
 The major advantage of this solution is that it is straightforward to
 implement. In particular, the sync committee has already been implemented in
 Ethereum and there exists a large body of community projects and tools that
-could be reused in Axelar's case, such as
+already implement light client based on sync committee, such as
 Kevlar\footnote{\url{https://github.com/lightclients/kevlar}} and
 Helios\footnote{\url{https://github.com/a16z/helios}}.
 
@@ -115,7 +115,6 @@ approx. every day) is recorded on Axelar's chain. This can result in
 significant storage overhead, since the mechanism requires approx. $25$KB per
 committee~\cite{sync-committee}.
 
-% TODO(shresth): rename to referreed, cite PoPoS
 \subsubsection{Refereed Light Client}
 
 This mechanism makes use of Ethereum's sync committee in a manner similar as
@@ -123,7 +122,7 @@ the previous solution, but aiming to reduce the storage requirements.
 
 In brief, the idea is to (optimistically) assume that an attestor provides
 honest data about the updated sync committees and enable a dispute resolution
-mechanism in case the attestor is malicious. Specifically, we assume that the
+mechanism in case the attestor is malicious\cite{agrawal2023proofs}. Specifically, we assume that the
 bridge is updated every $x$ (sync committee) periods. In the previous
 solution, each committee is recorded on Axelar's chain. Here, there exists an
 Axelar attestor who collects the $x$ committees, each corresponding to the sync
@@ -151,19 +150,30 @@ We propose two manners in which the commitment can be implemented.
 In this case, the commitment is a list of hashes, with each hash corresponding
 to a sync committee. The main benefit of this solution is that disputes can be
 resolved easily, since the point of disagreement can be identified directly by
-parsing the two lists. However, the asymptotic complexity of this solution is
-again linear on the number of committees, albeit the constant factor (which is
-only a hash in the optimistic case) is significantly smaller than the previous
-solution.
+comparing the two lists element by element. Once the point of disagreement 
+is identified the attestors need to open the last agreed committee, the committee 
+of disagreement and the handover signatures from the last agreed committee to the
+committee of disagreement.
+However, the asymptotic complexity 
+of this solution is again linear on the number of committees, 
+the proof size is significantly smaller than the previous solution as only committee hashes 
+have to be submitted instead of complete sync committee public keys.
 
-% TODO(shresth): cite lazylight
 \paragraph{Bisection}
-Here, the commitment is a Merkle tree, the leaves of which correspond to each
-sync committee. Now, the constant factor of the storage complexity is even
-smaller (in the optimistic case), since only one hash every $x$ committees
-needs to be published. However, dispute resolution is more costly, at
-logarithmic complexity on $x$ (since the Merkle branches of the two committees
-at the point of disagreement need to be revealed).
+Here, the commitment is a Merkle tree, the leaves of which correspond to the hash of each
+sync committee. Initially the attestor publishes the root of the tree. In case of a dispute,
+the challenger provides an alternative root and initiates an interactive dispute resolution
+protocol. In each round the attestors open the children of the disputed node. Then the on chain
+protocol checks if the children are correct (i.e. the hash of the children matches the hash of the node)
+and compares left child and then the right child. If the left child is already different for 
+the two attestors the next disputed node is set to the left child, otherwise to the right child.
+This process is recursively repeated until we reach the leaf of the tree which is also the 
+first point of disagreement. At this point the attestors can follow the same protocol as the linear
+case to resolve the dispute. 
+
+The advantage of this solution is that the storage complexity is constant in the optimistic case
+(i.e. the attestors are honest and no dispute resolution is required) where as it falls back to 
+poly logarithmic complexity in the case of dispute resolution.\cite{tas2022light,agrawal2023proofs}.
 
 Finally, we note that the advantage of the refereed light client solution only
 manifests if the bridge is synchronized infrequently and dispute resolutions
@@ -181,7 +191,7 @@ Non-interactive ARguments of Knowledge). The goal of this solution is to reduce
 the proof of validity of each bridged Ethereum transaction.
 
 The setup of this solution is similar to the sync committee-based solution
-above. Specifically, each committee is published on Axelar, along with a proof
+above. Specifically, each committee hash is published on Axelar, along with a proof
 of handover for the committee transitions. 
 
 In particular, when an attestor wants to bridge an Ethereum transaction to
@@ -192,12 +202,11 @@ members that have signed the transaction under question.
 
 The main advantage of this solution is that SNARKs can be very efficient in
 terms of proof sizes. For example, a Groth16~\cite{EC:Groth16} proof consists
-of only $2$ group elements, that is approx. $209$ bytes. However, we note that
-the problem under question is not one of efficient bootstrapping, as is the
-usual use case for SNARKs, but obtaining the latest state of Ethereum at any
-point in time. This is relevant because recursion, which is a major feature in
-terms of efficiency, can be used only on chains of increasing length, which is
-not our case.
+of only $2$ group elements, that is approx. $209$ bytes. In fact we can generate a constant 
+size proof for increasing length of sync periods. But this benefit 
+can not be realised in the current bridge construction because the bridge is 
+continuously syncronised and therefore the proof data submitted to the chain
+will grow linearly with the number of sync periods.
 
 One main disadvantage of this solution is implementation complexity and cost.
 Securely implementing ZK-SNARKs can be particularly challenging, even more so
@@ -220,7 +229,6 @@ costing annually
 \$12,967,488 on Amazon AWS (annual pricing, \texttt{us-east-1} region, June 2023),
 or \$1,749,600 on Hetzner's equivalents.
 Scaling this proportionally for Ethereum
-($\times 4$ for sync committee size $512$, $/12$ for block rate $1$ block per $12$ seconds)
 yields an estimate of \$583,333 annually.
 
 \subsubsection{Comparison}
@@ -237,9 +245,10 @@ bridge safety).
     \footnotesize
     \begin{tabular}{|c|c|c|c|c|c|} 
         \hline
-        \multirow{2}{*}{} & \multirow{2}{*}{ \textbf{Sampling} } & \multirow{2}{*}{ \begin{tabular}[c]{@{}c@{}} \textbf{Sync} \\ \textbf{Committee} \end{tabular} } & \multicolumn{2}{c|}{ \textbf{Refereed} } & \multirow{2}{*}{ \textbf{SNARK} } \\
-        \cline{4-5}
-        & & & \textbf{Linear} & \textbf{Bisection} & \\
+
+        \multirow{2}{*}{} & \multicolumn{2}{c|}{ \textbf{SPV} } & \multicolumn{2}{c|}{ \textbf{Refereed} } & \multirow{2}{*}{ \textbf{SNARK} } \\
+        \cline{2-5}
+        & \textbf{Sampling} & \textbf{Sync Committee} & \textbf{Linear} & \textbf{Bisection} & \\
         \hline
         \begin{tabular}[c]{@{}c@{}} \emph{Proof Size} \\ \emph{(Annual)} \end{tabular} & $365 \cdot 25$ KB & $365 \cdot 25$ KB & $\frac{365}{x} \cdot (25\text{KB} + x \cdot 32\text{B})$ & $\frac{365}{x} \cdot  (25\text{KB} + 32\text{B})$ & $365 \cdot (209 + 32)$ B \\
         \hline
@@ -251,7 +260,7 @@ bridge safety).
         \hline
         \begin{tabular}[c]{@{}c@{}} \emph{Implementation} \\ \emph{Complexity} \end{tabular} & High & Low & Medium & Medium & High \\
         \hline
-        \begin{tabular}[c]{@{}c@{}} \emph{Prover Cost}\\ \emph{Annually} \end{tabular} & \$600  & \$600  & \$600 & \$600 & >\$500,000 \\
+        \begin{tabular}[c]{@{}c@{}} \emph{Cost of one}\\ \emph{prover annually} \end{tabular} & \$600  & \$600  & \$600 & \$600 & >\$500,000 \\
         \hline
     \end{tabular}
     }
@@ -266,18 +275,15 @@ bridge safety).
 \end{table}
 
 \subsubsection*{Our recommendation}
-
 We recommend implementing the second option, that is an SPV client that relies
-on the sync committee.
-
-From the above comparison, it is evident that the
+on the sync committee. From the above comparison, it is evident that the
 first option (SPV client with Ethereum validator sampling) is rather
 experimental and requires significant research work before proceeding with
 implementation.
 
-Due to the high traffic that the bridge is expected to observe, it will most
-probably need to be updated at least on a daily basis, so the main
-benefit of the refereed options would be lost.
+Due to the high traffic that the bridge is expected to observe, it will 
+be updated at least on a daily basis, so the main
+benefit of the refereed constructions would be lost.
 
 Finally, the exceptional cost of creating SNARK proofs at this point in time
 makes it prohibitively expensive as an option. Nonetheless, we will design the

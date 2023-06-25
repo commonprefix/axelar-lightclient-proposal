@@ -3,12 +3,10 @@ Blockchain technology has revolutionized the way we create trustless and decentr
 
 Axelar\footnote{\url{https://axelar.network}} enables interoperability between diverse blockchain ecosystems. Axelar is a Cosmos\footnote{\url{https://cosmos.network}} blockchain, which aims to link the Cosmos ecosystem to non-Cosmos chains, such as Ethereum, Bitcoin, Polygon, and others.
 
-Ethereum, in particular, is one of the most widely used blockchains, hosting a multitude of decentralized applications spanning various sectors, including finance, gaming, and governance. Therefore, establishing a seamless and secure connection to Ethereum is of paramount importance for Axelar. 
-
-This proposal focuses on building a trustless connection between Axelar and Ethereum. Our contribution is a design which both (i) guarantees safety of the bridge at all times and (ii) enables an on-chain healing process, in the face of a temporary adversarial majority, without the need of sophisticated social consensus mechanisms.
+Ethereum, in particular, is one of the most widely used blockchains, hosting a multitude of decentralized applications spanning various sectors, including finance, gaming, and governance\cite{wood,buterin}. Therefore, establishing a seamless and secure connection to Ethereum is of paramount importance for Axelar. This proposal focuses on building a trustless connection between Axelar and Ethereum.
 
 \subsection{Current Construction}
-Currently, Axelar relies on a Tendermint-based delegated proof-of-stake consensus mechanism~\cite{axelar-whitepaper}. In particular, validators lock stake in the Axelar chain and receive stake delegations from Axelar users. The top $70$ validators, based on the aggregate (self and delegated) stake, are chosen to participate in Axelar's consensus mechanism.
+Currently, Axelar relies on a Tendermint-based delegated proof-of-stake consensus mechanism~\cite{axelar-whitepaper,buchman2019latest}. In particular, validators lock stake in the Axelar chain and receive stake delegations from Axelar users. The top $70$ validators, based on the aggregate (self and delegated) stake, are chosen to participate in Axelar's consensus mechanism.
 
 Axelar adopts a modular architecture to connect with different chains. Each connector module consists of two essential components. The first component verifies source chain data (e.g., Ethereum) into Axelar. The second component generates threshold signatures, which can be verified on the source chain. In this report, we focus exclusively on the former, that is verification of source chain data that are bridged into Axelar.
 
@@ -35,3 +33,11 @@ This poses a significant centralization risk within the Axelar network. With a f
 % In both situations outlined above, an honest Axelar validator who is not actively monitoring the source chain has no means to detect the attack and would accept incorrect data.
 
 To address this challenge, we propose a construction that enables users and attestors to verify the consensus of the source chain within the Axelar execution layer. This is accomplished through light and super-light client constructions of the source chain. In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with the requirements of Axelar, aiming to mitigate centralization risks, enhance security, and improve scalability. Our construction makes use of Ethereum's sync committee and guarantees bridge safety, assuming at least one Axelar attestor is honest.
+
+\begin{figure}
+    \includegraphics[scale=0.55]{figures/axelar_light_client_architecture.pdf}
+    \caption{We recommend implementing an on chain light client using sync committee. The light client will be implemented as a go module that will be deployed on the Axelar network. The light client will be responsible for verifying the handover signatures, block signatures and Merkle inclusion proofs.}
+    \label{fig.axelar_light_client_architecture}
+\end{figure}
+
+

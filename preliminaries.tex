@@ -3,7 +3,7 @@
 \subsubsection{Bridge}
 A \emph{bridge} is an interoperability protocol between two ledger protocols.
 The purpose of the bridge is to relay events or information that take place on
-the source side to the destination side. In particular, the parties that
+the source side to the destination side\cite{sok_bridges, Zamyatin2019SoKCA}. In particular, the parties that
 maintain the bridge transmit \emph{cross-chain} transactions, such that a
 transaction on the source side is represented by an ``image'' on the
 destination side. There are two core properties that a secure bridge should 
@@ -60,17 +60,18 @@ we will discuss in the alternatives of Section~\ref{subsec:alternatives}.
 The sync committee consists of $512$ of Ethereum validators. They are randomly
 selected, from the set of all validators, every sync committee period (approx.
 $1$ day). Each honest validator in the sync committee is continually online and
-signs the header of each block that is added to the chain's tip on every slot. 
+signs the header of each block during the sync committee period.
 
 The sync committee of period $X$ is decided one periods in advance,
-that is the beginning of period $X-1$. The root of current sync committee and 
-the next sync committee is stored in the Ethereum block header. 
-Consequently, when a block is validated in
-this period, the committee is authorized to take effect at the beginning of its
-designated period. Crucially, the existence of a block, which contains (in its
-header) the roots of both the active and the following committee can serve as
-proof of the ``handover'' from one committee to the other. Note that a block is
-validated if it is signed by at least $\frac{2}{3}$ of all committee members.
+that is the beginning of period $X-1$. As headers of the current period $X$ 
+containing the root of the next sync committe $X+1$ are signed by the current
+sync committee $X$, the signatures of the current sync committee act as a 
+handover mechanism from the current committee to the next. A prover can 
+provide signatures from $2/3$ of the current committee on some header of 
+current period as a proof of validity of the next committee. Note that there
+can be multiple headers in the current period which can have more than $2/3$
+sync committee signatures on them. The prover can choose any of these headers
+with their respective signatures as a proof.
 
 We demonstrate the usage of the sync committee with the following example.
 Assume that a client $C$ holds the block header of some slot $N$, that is part
