@@ -18,7 +18,7 @@ to the project's implementation:
 This project will be executed in multiple phases, described in detail below.
 
 \subsection{Phase 1: Architectural Design}
-During this phase, we will study the Axelar codebase in depth and propose a suitable architecture, consisting of a Go Cosmos module that will implement the on-chain Ethereum light client.
+During this phase, we will study the Axelar codebase in depth and propose a suitable architecture, consisting of a CosmWasm module that will implement the on-chain Ethereum light client.
 Our approach will stick to the following principles: 
 \begin{itemize}
   \item \textbf{Respectful of previous work.} Our proposed architecture will require minimal changes to the codebase, maintaining the existing design choices of the codebase.
@@ -30,7 +30,7 @@ Our approach will stick to the following principles:
 \textbf{Deliverables.} At the conclusion of this phase, we will deliver the following items:
 
 \begin{itemize}
-    \item A detailed design document, that describes the architecture of the light client to be implemented on Axelar. The design document will detail the different components that we will develop. These include the Go module which will run within the Axelar codebase (acting as the verifier), as well as the modifications needed on the attestor codebase (also part of the full node), so that attestations can be reported to the on-chain verifier.
+    \item A detailed design document, that describes the architecture of the light client to be implemented on Axelar. The design document will detail the different components that we will develop. These include the CosmWasm module which will run within the Axelar codebase (acting as the verifier), as well as the modifications needed on the attestor codebase (also part of the full node), so that attestations can be reported to the on-chain verifier.
 \end{itemize}
 
 The document will be delivered in LaTeX PDF format and include pseudocode for the relevant components, so that their role is clear from a theoretical point of view.
@@ -47,7 +47,7 @@ During this phase, we will implement the consensus components of the on-chain li
 \textbf{Deliverables.} At the conclusion of this phase, we will deliver the following items:
 
 \begin{itemize}
-    \item A Cosmos Go module, which implements the consensus components of the on-chain Ethereum light client.
+    \item A Cosmos CosmWasm module, which implements the consensus components of the on-chain Ethereum light client.
     \item A test suite, which verifies the correctness of the consensus components.
     \item A component that allows any friendly-but-untrusted party to submit to the on-chain verifier the consensus attestation data (sync committee signatures and block headers), produced via the Ethereum Beacon chain API.
 \end{itemize}
@@ -61,8 +61,8 @@ This phase consists of implementing the execution logic of the on-chain Ethereum
 \textbf{Deliverables.} At the conclusion of this phase, we will deliver the following items:
 
 \begin{itemize}
-    \item An extension of the Go Cosmos module (developed during Phase $2$), that implements the execution components of the on-chain Ethereum light client.
-    \item A test suite that verifies the correctness of the execution components of the Go module.
+    \item An extension of the CosmWasm module (developed during Phase $2$), that implements the execution components of the on-chain Ethereum light client.
+    \item A test suite that verifies the correctness of the execution components of the CosmWasm module.
 \end{itemize}
 
 \subsection{Phase 4: Theory, Deployment \& Audit}
