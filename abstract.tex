@@ -2,19 +2,22 @@
     Axelar network is a decentralized interoperability layer that connects a
     large set of blockchains. 
     %
-    Axelar is based on the Cosmos SDK and
+    Axelar is based on the Cosmos SDK and defines a set of Tendermint
+    proof-of-stake validators, who can relay events from supported chains to
+    the Axelar Cosmos side.
+    In particular, Axelar
+    %
     leverages multiple validation models for events happening on the supported
     EVM chains. Such events can be reported via IBC light clients, when
-    supported, or attestations from Axelar's proof-of-stake validators.
-    Axelar defines a set of Tendermint proof-of-stake validators, who can relay
-    events from supported chains to the Axelar Cosmos side.
+    possible, or attestations from Axelar's proof-of-stake validators.
     %
     Axelar validators are expected to run full nodes of the EVM chains to
-    gather event information. However, since this operation is expensive, in the
-    absence of more cost-effective and efficient alternatives, some validators
-    may prefer to connect to centralized RPC providers.
+    gather event information. However, this operation is typically expensive, 
+    such that the entry and maintenance costs for validators increase, along with
+    possibly leading some validators to use centralized RPC providers.
     %
-    To prevent such tendencies, we advocate for an on-chain light client to run
+    This proposal aims to reduce operational costs and increase Axelar's 
+    level of decentralization. Specifically, we advocate for an on-chain light client to run
     as an Axelar module that trustlessly consumes source data.
     Such a light client checks the veracity of cross-chain claims to ensure the
     relevant events have been included in the canonical source chain,
