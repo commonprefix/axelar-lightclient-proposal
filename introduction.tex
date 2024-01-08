@@ -1,12 +1,12 @@
 \section{Introduction}
 Blockchain technology has revolutionized the way we create trustless and decentralized applications, offering immense composability and the ability to build complex primitives. However, the blockchain landscape is far from homogeneous, with multiple ecosystems that are based on their own consensus protocols and offer varying security and operation features. 
 
-Axelar\footnote{\url{https://axelar.network}} enables interoperability between diverse blockchain ecosystems. Axelar is a Cosmos\footnote{\url{https://cosmos.network}} blockchain, which aims to link the Cosmos ecosystem to non-Cosmos chains, such as Ethereum, Bitcoin, Polygon, and others.
+Axelar\footnote{\url{https://axelar.network}} enables interoperability between diverse blockchain ecosystems. Axelar is based on the Cosmos SDK\footnote{\url{https://cosmos.network}} and aims to interlink various blockchain ecosystems, such as Cosmos, Ethereum, Bitcoin, Polygon, and others. Notably, it has been identified as one of only two possible solutions that are sufficiently secure across the stack to be used by the leading decentralized exchange, Uniswap~\cite{uniswap-report}.
 
 Ethereum, in particular, is one of the most widely used blockchains, hosting a multitude of decentralized applications spanning various sectors, including finance, gaming, and governance\cite{wood,buterin}. Therefore, establishing a seamless and secure connection to Ethereum is of paramount importance for Axelar. This proposal focuses on building a trustless connection between Axelar and Ethereum.
 
 \subsection{Current Construction}
-Currently, Axelar relies on a Tendermint-based delegated proof-of-stake consensus mechanism~\cite{axelar-whitepaper,buchman2019latest}. In particular, validators lock stake in the Axelar chain and receive stake delegations from Axelar users. The top $70$ validators, based on the aggregate (self and delegated) stake, are chosen to participate in Axelar's consensus mechanism.
+Currently, Axelar implements a Tendermint-based delegated proof-of-stake consensus mechanism~\cite{axelar-whitepaper,buchman2019latest}. In particular, validators lock stake in the Axelar chain and receive stake delegations from Axelar users. The top $75$ validators, based on the aggregate (self and delegated) stake, are chosen to participate in Axelar's consensus mechanism.
 
 Axelar adopts a modular architecture to connect with different chains. Each connector module consists of two essential components. The first component verifies source chain data (e.g., Ethereum) into Axelar. The second component generates threshold signatures, which can be verified on the source chain. In this report, we focus exclusively on the former, that is verification of source chain data that are bridged into Axelar.
 
@@ -19,20 +19,27 @@ This voting process forms the basis of verifying the source chain data into Axel
 Nonetheless, for the connector construction to function securely, both the source chain and Axelar are assumed safe and live. In addition, the (quadratic) voting power distribution among the attestors is assumed to have an honest majority.
 
 \subsection{Problem Statement}
-The current construction of Axelar relies on attestors running the full node of the source chain to verify transactions and vote in an informed manner. However, this imposes significant costs.\footnote{Indicatively, running a full Ethereum node requires $4+$ CPU cores, $16+$ GB RAM, at least $1$ TB SSD, and $25$ Mbps of stable connection (source: \url{https://www.quicknode.com/guides/infrastructure/node-setup/ethereum-full-node-vs-archive-node}).}
-Furthermore, as the Axelar network expands its support for additional chains, attestors will be required to run an increasing number of full nodes to verify transactions from these source chains.
+The current construction of Axelar relies on attestors running the full node of
+the source chain to verify transactions and vote in an informed manner.
+As the Axelar network expands its support for additional chains,
+attestors will be required to run an increasing number of full nodes to verify
+transactions from these source chains.
 
-% This scalability bottleneck hampers the growth and efficiency of the Axelar network. 
-In practice, attestors often rely on third-party service providers to run and maintain the full nodes on their behalf. 
-% Unfortunately, the Axelar network lacks a mechanism to detect whether attestors are utilizing third-party providers or running the full nodes themselves --- in fact, it is unclear if such behavior is detectable.
-% 
-This poses a significant centralization risk within the Axelar network. With a few dominant third-party providers in the market, attestors are likely to use the same service provider.\footnote{For example, at times, $50$\% of Ethereum's transactions ran through one provider, Infura~\cite{infura}.} If the third-party provider experiences a temporary compromise or breach, the entire Axelar network becomes vulnerable to attacks. 
+However, running a full node, or many, imposes significant costs on
+attestors.\footnote{Indicatively, running a full Ethereum node requires $4+$
+CPU cores, $16+$ GB RAM, at least $1$ TB SSD, and $25$ Mbps of stable
+connection (source:
+\url{https://www.quicknode.com/guides/infrastructure/node-setup/ethereum-full-node-vs-archive-node}).}
+In order to maintain a diverse and robust ecosystem, comprising a multitude of
+participants, it is important to develop cost-effective and efficient
+solutions.\footnote{In practice, systems that impose significant costs for running a full node often demonstrate centralization tendencies, where participants tend to rely on
+third-party service providers to run and maintain the full nodes on their behalf. Due to economies of scale, a large portion of these networks tends to cluster around a small number of such providers; e.g., at times, $50$\% of Ethereum's transactions ran through one such provider, Infura~\cite{infura}. Therefore, proactively addressing such hazards can lead to a healthier, more diverse and robust ecosystem.}
+Such solutions could reduce the entry and maintenance costs for new validators,
+also possibly leading to more value being gained for users.
 
-% In addition, collusion among attestors can also jeopardize Axelar's security. 
+To address this challenge, we propose a construction that enables users and attestors to verify the consensus of the source chain within the Axelar execution layer. This is accomplished through light and super-light client constructions of the source chain.
 
-% In both situations outlined above, an honest Axelar validator who is not actively monitoring the source chain has no means to detect the attack and would accept incorrect data.
-
-To address this challenge, we propose a construction that enables users and attestors to verify the consensus of the source chain within the Axelar execution layer. This is accomplished through light and super-light client constructions of the source chain. In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with the requirements of Axelar, aiming to mitigate centralization risks, enhance security, and improve scalability. Our construction makes use of Ethereum's sync committee and guarantees bridge safety, assuming at least one Axelar attestor is honest.
+In this report, we explore several constructions for light and super-light clients tailored specifically for Ethereum. We then propose a construction that best aligns with Axelar's vision and requirements, aiming to drive decentralization, enhance security, and improve scalability. Our construction makes use of Ethereum's sync committee and guarantees bridge safety, assuming at least one Axelar attestor is honest.
 
 \begin{figure}
     \includegraphics[scale=0.55]{figures/axelar_light_client_architecture.pdf}
